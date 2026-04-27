@@ -58,20 +58,33 @@ struct RecoveryView: View {
 
     var body: some View {
         NavigationStack {
-            List(viewModel.items) { item in
-                HStack {
-                    Circle()
-                        .fill(item.status.color)
-                        .frame(width: 10, height: 10)
-                    VStack(alignment: .leading) {
-                        Text(item.muscleName)
-                        Text("\(item.status.rawValue) • Remaining \(item.remainingHours)h")
+            VStack(spacing: 12) {
+                GroupBox("Readiness") {
+                    HStack {
+                        Text("\(viewModel.readinessScore)/100")
+                            .font(.title3.bold())
+                        Spacer()
+                        Text(viewModel.lastWorkoutSummary)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                    Spacer()
-                    Text("\(item.fatigueScore)")
-                        .fontWeight(.semibold)
+                }
+
+                List(viewModel.items) { item in
+                    HStack {
+                        Circle()
+                            .fill(item.status.color)
+                            .frame(width: 10, height: 10)
+                        VStack(alignment: .leading) {
+                            Text(item.muscleName)
+                            Text("\(item.status.rawValue) • Remaining \(item.remainingHours)h")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Text("\(item.fatigueScore)")
+                            .fontWeight(.semibold)
+                    }
                 }
             }
             .navigationTitle("Recovery")

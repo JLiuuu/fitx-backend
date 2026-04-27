@@ -12,6 +12,8 @@ final class RecoveryViewModel: ObservableObject {
     private let appState: AppState
     init(appState: AppState) { self.appState = appState }
     var items: [MuscleRecoveryItem] { appState.recoveryItems }
+    var lastWorkoutSummary: String { appState.lastWorkoutSummary }
+    var readinessScore: Int { appState.dashboard.readinessScore }
 }
 
 @MainActor

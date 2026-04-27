@@ -8,6 +8,7 @@ final class AppState: ObservableObject {
     @Published var coachAdvice: CoachAdvice
     @Published var healthStatus: HealthAuthorizationStatus = .notRequested
     @Published var latestHealthSummary: String = "No HealthKit sync yet."
+    @Published var lastWorkoutSummary: String = "No workout saved yet."
 
     private let recoveryCalculator = RecoveryCalculator()
     private let healthKitManager = HealthKitManager()
@@ -27,8 +28,10 @@ final class AppState: ObservableObject {
     }
 
     func addWorkout(input: WorkoutInput) {
-        let updated = recoveryCalculator.updateRecovery(current: recoveryItems, input: input)
+        let result = recoveryCalculator.updateRecovery(current: recoveryItems, input: input)
+        let updated = result.items
         recoveryItems = updated
+        lastWorkoutSummary = result.summary
         dashboard = dashboard.withReadiness(RecoveryCalculator.readinessScore(from: updated))
         coachAdvice = CoachAdvice.generate(from: dashboard, recoveryItems: updated)
     }
