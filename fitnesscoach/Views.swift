@@ -198,10 +198,22 @@ struct CoachView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
+                    GroupBox("Readiness Score") {
+                        Text("\(advice.readinessScore)/100")
+                            .font(.system(size: 34, weight: .bold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     AdviceCard(title: "Training", content: advice.training)
                     AdviceCard(title: "Nutrition", content: advice.nutrition)
                     AdviceCard(title: "Recovery", content: advice.recovery)
                     AdviceCard(title: "Warning", content: advice.warning)
+                    AdviceCard(title: "Missing Data", content: advice.missingData)
+
+                    Button("Refresh AI Advice") {
+                        viewModel.refreshCoach()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding()
             }

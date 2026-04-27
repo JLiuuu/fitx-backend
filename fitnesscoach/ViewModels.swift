@@ -50,6 +50,10 @@ final class CoachViewModel: ObservableObject {
     private let appState: AppState
     init(appState: AppState) { self.appState = appState }
     var advice: CoachAdvice { appState.coachAdvice }
+
+    func refreshCoach() {
+        appState.refreshCoachAdvice()
+    }
 }
 
 @MainActor

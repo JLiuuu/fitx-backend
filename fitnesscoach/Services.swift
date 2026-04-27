@@ -137,3 +137,46 @@ final class MealScannerService {
         )
     }
 }
+
+struct CoachEngine {
+    func generate(context: CoachContext) -> CoachAdvice {
+        let fatigued = context.recoveryItems.filter { $0.status == .fatigued }.map(\.muscleName)
+        let recovering = context.recoveryItems.filter { $0.status == .recovering }.map(\.muscleName)
+        let proteinRemaining = max(0, context.dashboard.proteinGoal - context.dashboard.proteinConsumed)
+        let caloriesRemaining = max(0, context.dashboard.calorieGoal - context.dashboard.caloriesConsumed)
+
+        let training: String
+        if context.dashboard.readinessScore >= 80 {
+            training = "Today is green-light. Run \(context.dashboard.trainingRecommendation) with normal intensity."
+        } else if context.dashboard.readinessScore >= 60 {
+            training = "Use moderate intensity today. Keep 1-2 reps in reserve on key sets."
+        } else {
+            training = "Recovery-first day. Avoid heavy compounds and favor mobility/cardio."
+        }
+
+        let nutrition = "Remaining \(caloriesRemaining) kcal and \(proteinRemaining)g protein. Meals logged today: \(context.mealsToday)."
+        let recovery = "Fatigued muscles: \(fatigued.isEmpty ? "none" : fatigued.joined(separator: ", ")). Recovering: \(recovering.isEmpty ? "none" : recovering.joined(separator: ", "))."
+        let warning = fatigued.isEmpty ? "No immediate overtraining risk detected." : "Avoid direct heavy loading for \(fatigued.joined(separator: ", "))."
+
+        let missingData: String
+        switch context.healthStatus {
+        case .authorized:
+            missingData = "No critical missing data."
+        case .notRequested:
+            missingData = "Health data not authorized yet. Advice uses workout + nutrition logs only."
+        case .unavailable:
+            missingData = "HealthKit unavailable on this platform. Using conservative estimates."
+        case .denied:
+            missingData = "Health access denied. Enable permissions for better readiness accuracy."
+        }
+
+        return CoachAdvice(
+            readinessScore: context.dashboard.readinessScore,
+            training: training,
+            nutrition: nutrition,
+            recovery: recovery,
+            warning: warning,
+            missingData: missingData
+        )
+    }
+}

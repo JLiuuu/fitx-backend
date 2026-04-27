@@ -14,12 +14,14 @@ final class AppState: ObservableObject {
     private let recoveryCalculator = RecoveryCalculator()
     private let healthKitManager = HealthKitManager()
     private let mealScanner = MealScannerService()
+    private let coachEngine = CoachEngine()
 
     init() {
         self.dashboard = MockData.dashboard
         self.recoveryItems = MockData.recoveryItems
         self.meals = MockData.meals
         self.coachAdvice = MockData.coachAdvice
+        refreshCoachAdvice()
     }
 
     func requestHealthAccess() async {
@@ -34,7 +36,7 @@ final class AppState: ObservableObject {
         recoveryItems = updated
         lastWorkoutSummary = result.summary
         dashboard = dashboard.withReadiness(RecoveryCalculator.readinessScore(from: updated))
-        coachAdvice = CoachAdvice.generate(from: dashboard, recoveryItems: updated)
+        refreshCoachAdvice()
     }
 
     func scanMeal() async {
@@ -47,6 +49,17 @@ final class AppState: ObservableObject {
             lastMealDetectionSummary = "Detected: \(top)"
         }
         dashboard = dashboard.withNutritionDelta(calories: result.meal.calories, protein: result.meal.protein, carbs: result.meal.carbs, fat: result.meal.fat)
-        coachAdvice = CoachAdvice.generate(from: dashboard, recoveryItems: recoveryItems)
+        refreshCoachAdvice()
+    }
+
+    func refreshCoachAdvice() {
+        coachAdvice = coachEngine.generate(
+            context: CoachContext(
+                dashboard: dashboard,
+                recoveryItems: recoveryItems,
+                mealsToday: meals.count,
+                healthStatus: healthStatus
+            )
+        )
     }
 }

@@ -93,10 +93,12 @@ struct MealItem: Identifiable {
 }
 
 struct CoachAdvice {
+    let readinessScore: Int
     let training: String
     let nutrition: String
     let recovery: String
     let warning: String
+    let missingData: String
 
     static func generate(from dashboard: TodayDashboard, recoveryItems: [MuscleRecoveryItem]) -> CoachAdvice {
         let fatiguedMuscles = recoveryItems.filter { $0.status == .fatigued }.map(\.muscleName)
@@ -106,10 +108,12 @@ struct CoachAdvice {
         let maxRemainingHours = recoveryItems.map(\.remainingHours).max() ?? 0
 
         return CoachAdvice(
+            readinessScore: dashboard.readinessScore,
             training: "Recommended: \(dashboard.trainingRecommendation). Avoid heavy loading for: \(avoidText).",
             nutrition: "Remaining today: \(caloriesRemaining) kcal, \(proteinRemaining)g protein.",
             recovery: "Longest estimated recovery window: \(maxRemainingHours)h. Keep sleep >= 7.5h.",
-            warning: fatiguedMuscles.isEmpty ? "No high-risk signal today." : "High fatigue detected in \(avoidText). Reduce volume."
+            warning: fatiguedMuscles.isEmpty ? "No high-risk signal today." : "High fatigue detected in \(avoidText). Reduce volume.",
+            missingData: "No missing data."
         )
     }
 }
@@ -146,6 +150,13 @@ struct HealthSyncResult {
     let summary: String
 }
 
+struct CoachContext {
+    let dashboard: TodayDashboard
+    let recoveryItems: [MuscleRecoveryItem]
+    let mealsToday: Int
+    let healthStatus: HealthAuthorizationStatus
+}
+
 enum MockData {
     static let dashboard = TodayDashboard(
         readinessScore: 82,
@@ -174,9 +185,11 @@ enum MockData {
     ]
 
     static let coachAdvice = CoachAdvice(
+        readinessScore: 82,
         training: "Recommend Pull Day at moderate intensity. Avoid heavy squats today.",
         nutrition: "You still need ~62g protein. Add a high-protein dinner with moderate carbs.",
         recovery: "Legs need around 24h more recovery. Aim for 7.5h sleep tonight.",
-        warning: "If soreness or fatigue worsens, reduce load and prioritize recovery."
+        warning: "If soreness or fatigue worsens, reduce load and prioritize recovery.",
+        missingData: "No missing data."
     )
 }
