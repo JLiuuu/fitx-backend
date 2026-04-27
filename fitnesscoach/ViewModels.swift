@@ -5,6 +5,10 @@ final class HomeViewModel: ObservableObject {
     private let appState: AppState
     init(appState: AppState) { self.appState = appState }
     var dashboard: TodayDashboard { appState.dashboard }
+
+    func runBetaLoop() async {
+        await appState.runBetaLoop()
+    }
 }
 
 @MainActor

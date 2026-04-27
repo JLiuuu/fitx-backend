@@ -114,6 +114,21 @@ final class AppState: ObservableObject {
         return "\(max(0, mealScanDailyLimit - dailyMealScanCount)) / \(mealScanDailyLimit) scans left today"
     }
 
+    func runBetaLoop() async {
+        await requestHealthAccess()
+        addWorkout(
+            input: WorkoutInput(
+                exerciseName: "Pull-up",
+                sets: 4,
+                reps: 8,
+                weight: 0,
+                rpe: 8
+            )
+        )
+        await scanMeal()
+        refreshCoachAdvice()
+    }
+
     private func persist() {
         persistence.save(
             PersistedState(

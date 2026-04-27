@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject var viewModel: HomeViewModel
+    @State private var betaRunning = false
 
     var body: some View {
         let dashboard = viewModel.dashboard
@@ -45,6 +46,16 @@ struct HomeView: View {
                             MetricRow(title: "Fat", value: "\(dashboard.fatConsumed) / \(dashboard.fatGoal) g")
                         }
                     }
+
+                    Button(betaRunning ? "Running Beta Loop..." : "Run End-to-End Beta Loop") {
+                        Task {
+                            betaRunning = true
+                            await viewModel.runBetaLoop()
+                            betaRunning = false
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(betaRunning)
                 }
                 .padding()
             }
