@@ -13,6 +13,8 @@ struct PersistedState: Codable {
     var dailyMealScanCount: Int
     var mealScanDailyLimit: Int
     var lastSubscriptionMessage: String
+    var useLiveBackend: Bool
+    var backendStatusMessage: String
 }
 
 struct DashboardDTO: Codable {

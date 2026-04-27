@@ -242,6 +242,7 @@ struct CoachView: View {
 struct ProfileView: View {
     @StateObject var viewModel: ProfileViewModel
     @State private var requesting = false
+    @State private var syncingSubscription = false
 
     var body: some View {
         NavigationStack {
@@ -284,6 +285,30 @@ struct ProfileView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text("Scan Quota: \(viewModel.scanQuotaText)")
+                    Button(syncingSubscription ? "Syncing StoreKit..." : "Sync Subscription from StoreKit") {
+                        Task {
+                            syncingSubscription = true
+                            await viewModel.syncStoreKitSubscription()
+                            syncingSubscription = false
+                        }
+                    }
+                    .disabled(syncingSubscription)
+                }
+
+                Section("Backend") {
+                    Toggle(
+                        "Use Live Backend",
+                        isOn: Binding(
+                            get: { viewModel.useLiveBackend },
+                            set: { viewModel.setLiveBackend($0) }
+                        )
+                    )
+                    Text(viewModel.backendStatusMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Set FITNESS_BACKEND_URL in environment for non-local endpoint.")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Profile")

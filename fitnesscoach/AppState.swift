@@ -10,6 +10,8 @@ final class AppState: ObservableObject {
     @Published var dailyMealScanCount: Int = 0
     @Published var mealScanDailyLimit: Int = 1
     @Published var lastSubscriptionMessage: String = "Free plan active."
+    @Published var useLiveBackend: Bool = false
+    @Published var backendStatusMessage: String = "Using mock backend."
     @Published var healthStatus: HealthAuthorizationStatus = .notRequested
     @Published var latestHealthSummary: String = "No HealthKit sync yet."
     @Published var lastWorkoutSummary: String = "No workout saved yet."
@@ -20,6 +22,9 @@ final class AppState: ObservableObject {
     private let mealScanner = MealScannerService()
     private let coachEngine = CoachEngine()
     private let persistence = PersistenceService()
+    private let apiClient = APIClient()
+    private let subscriptionManager = SubscriptionManager()
+    private let userID = "demo-user"
 
     init() {
         if let saved = persistence.load() {
@@ -35,6 +40,8 @@ final class AppState: ObservableObject {
             self.dailyMealScanCount = saved.dailyMealScanCount
             self.mealScanDailyLimit = saved.mealScanDailyLimit
             self.lastSubscriptionMessage = saved.lastSubscriptionMessage
+            self.useLiveBackend = saved.useLiveBackend
+            self.backendStatusMessage = saved.backendStatusMessage
         } else {
             self.dashboard = MockData.dashboard
             self.recoveryItems = MockData.recoveryItems
@@ -67,7 +74,19 @@ final class AppState: ObservableObject {
             lastMealDetectionSummary = "Daily scan quota reached. Upgrade to Pro for unlimited scans."
             return
         }
-        let result = await mealScanner.scanMockMeal()
+        let result: MealScanResult
+        if useLiveBackend {
+            do {
+                result = try await apiClient.scanMeal(userID: userID, mealType: "dinner")
+                backendStatusMessage = "Live backend scan succeeded."
+            } catch {
+                result = await mealScanner.scanMockMeal()
+                backendStatusMessage = "Live backend scan failed. Fallback to mock."
+            }
+        } else {
+            result = await mealScanner.scanMockMeal()
+            backendStatusMessage = "Using mock backend scan."
+        }
         meals.insert(result.meal, at: 0)
         dailyMealScanCount += 1
         if result.foods.isEmpty {
@@ -77,11 +96,31 @@ final class AppState: ObservableObject {
             lastMealDetectionSummary = "Detected: \(top)"
         }
         dashboard = dashboard.withNutritionDelta(calories: result.meal.calories, protein: result.meal.protein, carbs: result.meal.carbs, fat: result.meal.fat)
-        refreshCoachAdvice()
+        await refreshCoachAdvice()
         persist()
     }
 
     func refreshCoachAdvice() {
+        Task {
+            await refreshCoachAdvice()
+        }
+    }
+
+    func refreshCoachAdvice() async {
+        if useLiveBackend {
+            do {
+                coachAdvice = try await apiClient.fetchTodayCoach(
+                    userID: userID,
+                    dashboard: dashboard,
+                    recoveryItems: recoveryItems,
+                    mealsCount: meals.count
+                )
+                backendStatusMessage = "Live backend coach advice succeeded."
+                return
+            } catch {
+                backendStatusMessage = "Live backend coach advice failed. Fallback to local engine."
+            }
+        }
         coachAdvice = coachEngine.generate(
             context: CoachContext(
                 dashboard: dashboard,
@@ -126,7 +165,20 @@ final class AppState: ObservableObject {
             )
         )
         await scanMeal()
-        refreshCoachAdvice()
+        await refreshCoachAdvice()
+    }
+
+    func syncSubscriptionWithStoreKit() async {
+        await subscriptionManager.refreshEntitlements()
+        setSubscriptionPlan(subscriptionManager.activePlan)
+        lastSubscriptionMessage = subscriptionManager.lastSyncStatus
+        persist()
+    }
+
+    func setLiveBackendEnabled(_ enabled: Bool) {
+        useLiveBackend = enabled
+        backendStatusMessage = enabled ? "Live backend enabled." : "Mock backend enabled."
+        persist()
     }
 
     private func persist() {
@@ -143,7 +195,9 @@ final class AppState: ObservableObject {
                 subscriptionPlan: subscriptionPlan.rawValue,
                 dailyMealScanCount: dailyMealScanCount,
                 mealScanDailyLimit: mealScanDailyLimit,
-                lastSubscriptionMessage: lastSubscriptionMessage
+                lastSubscriptionMessage: lastSubscriptionMessage,
+                useLiveBackend: useLiveBackend,
+                backendStatusMessage: backendStatusMessage
             )
         )
     }

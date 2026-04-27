@@ -58,7 +58,9 @@ final class CoachViewModel: ObservableObject {
     var advice: CoachAdvice { appState.coachAdvice }
 
     func refreshCoach() {
-        appState.refreshCoachAdvice()
+        Task {
+            await appState.refreshCoachAdvice()
+        }
     }
 }
 
@@ -72,6 +74,8 @@ final class ProfileViewModel: ObservableObject {
     var subscriptionPlan: SubscriptionPlan { appState.subscriptionPlan }
     var subscriptionMessage: String { appState.lastSubscriptionMessage }
     var scanQuotaText: String { appState.remainingMealScansText() }
+    var useLiveBackend: Bool { appState.useLiveBackend }
+    var backendStatusMessage: String { appState.backendStatusMessage }
 
     func requestHealthPermission() async {
         await appState.requestHealthAccess()
@@ -79,5 +83,13 @@ final class ProfileViewModel: ObservableObject {
 
     func setPlan(_ plan: SubscriptionPlan) {
         appState.setSubscriptionPlan(plan)
+    }
+
+    func syncStoreKitSubscription() async {
+        await appState.syncSubscriptionWithStoreKit()
+    }
+
+    func setLiveBackend(_ enabled: Bool) {
+        appState.setLiveBackendEnabled(enabled)
     }
 }
