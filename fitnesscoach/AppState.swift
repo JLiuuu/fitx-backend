@@ -19,19 +19,37 @@ final class AppState: ObservableObject {
     private let healthKitManager = HealthKitManager()
     private let mealScanner = MealScannerService()
     private let coachEngine = CoachEngine()
+    private let persistence = PersistenceService()
 
     init() {
-        self.dashboard = MockData.dashboard
-        self.recoveryItems = MockData.recoveryItems
-        self.meals = MockData.meals
-        self.coachAdvice = MockData.coachAdvice
-        refreshCoachAdvice()
+        if let saved = persistence.load() {
+            self.dashboard = saved.dashboard.toDomain()
+            self.recoveryItems = saved.recoveryItems.map { $0.toDomain() }
+            self.meals = saved.meals.map { $0.toDomain() }
+            self.coachAdvice = saved.coachAdvice.toDomain()
+            self.healthStatus = HealthAuthorizationStatus(rawValue: saved.healthStatus) ?? .notRequested
+            self.latestHealthSummary = saved.latestHealthSummary
+            self.lastWorkoutSummary = saved.lastWorkoutSummary
+            self.lastMealDetectionSummary = saved.lastMealDetectionSummary
+            self.subscriptionPlan = SubscriptionPlan(rawValue: saved.subscriptionPlan) ?? .free
+            self.dailyMealScanCount = saved.dailyMealScanCount
+            self.mealScanDailyLimit = saved.mealScanDailyLimit
+            self.lastSubscriptionMessage = saved.lastSubscriptionMessage
+        } else {
+            self.dashboard = MockData.dashboard
+            self.recoveryItems = MockData.recoveryItems
+            self.meals = MockData.meals
+            self.coachAdvice = MockData.coachAdvice
+            refreshCoachAdvice()
+            persist()
+        }
     }
 
     func requestHealthAccess() async {
         let result = await healthKitManager.requestAuthorization()
         healthStatus = result.status
         latestHealthSummary = result.summary
+        persist()
     }
 
     func addWorkout(input: WorkoutInput) {
@@ -41,6 +59,7 @@ final class AppState: ObservableObject {
         lastWorkoutSummary = result.summary
         dashboard = dashboard.withReadiness(RecoveryCalculator.readinessScore(from: updated))
         refreshCoachAdvice()
+        persist()
     }
 
     func scanMeal() async {
@@ -59,6 +78,7 @@ final class AppState: ObservableObject {
         }
         dashboard = dashboard.withNutritionDelta(calories: result.meal.calories, protein: result.meal.protein, carbs: result.meal.carbs, fat: result.meal.fat)
         refreshCoachAdvice()
+        persist()
     }
 
     func refreshCoachAdvice() {
@@ -80,6 +100,7 @@ final class AppState: ObservableObject {
             ? "Pro plan active. Unlimited meal scans enabled."
             : "Free plan active. 1 meal scan per day."
         refreshCoachAdvice()
+        persist()
     }
 
     func canScanMeal() -> Bool {
@@ -91,5 +112,138 @@ final class AppState: ObservableObject {
             return "Unlimited scans"
         }
         return "\(max(0, mealScanDailyLimit - dailyMealScanCount)) / \(mealScanDailyLimit) scans left today"
+    }
+
+    private func persist() {
+        persistence.save(
+            PersistedState(
+                dashboard: dashboard.toDTO(),
+                recoveryItems: recoveryItems.map { $0.toDTO() },
+                meals: meals.map { $0.toDTO() },
+                coachAdvice: coachAdvice.toDTO(),
+                healthStatus: healthStatus.rawValue,
+                latestHealthSummary: latestHealthSummary,
+                lastWorkoutSummary: lastWorkoutSummary,
+                lastMealDetectionSummary: lastMealDetectionSummary,
+                subscriptionPlan: subscriptionPlan.rawValue,
+                dailyMealScanCount: dailyMealScanCount,
+                mealScanDailyLimit: mealScanDailyLimit,
+                lastSubscriptionMessage: lastSubscriptionMessage
+            )
+        )
+    }
+}
+
+private extension TodayDashboard {
+    func toDTO() -> DashboardDTO {
+        DashboardDTO(
+            readinessScore: readinessScore,
+            statusText: statusText,
+            trainingRecommendation: trainingRecommendation,
+            calorieGoal: calorieGoal,
+            caloriesConsumed: caloriesConsumed,
+            proteinGoal: proteinGoal,
+            proteinConsumed: proteinConsumed,
+            carbsGoal: carbsGoal,
+            carbsConsumed: carbsConsumed,
+            fatGoal: fatGoal,
+            fatConsumed: fatConsumed
+        )
+    }
+}
+
+private extension DashboardDTO {
+    func toDomain() -> TodayDashboard {
+        TodayDashboard(
+            readinessScore: readinessScore,
+            statusText: statusText,
+            trainingRecommendation: trainingRecommendation,
+            calorieGoal: calorieGoal,
+            caloriesConsumed: caloriesConsumed,
+            proteinGoal: proteinGoal,
+            proteinConsumed: proteinConsumed,
+            carbsGoal: carbsGoal,
+            carbsConsumed: carbsConsumed,
+            fatGoal: fatGoal,
+            fatConsumed: fatConsumed
+        )
+    }
+}
+
+private extension MuscleRecoveryItem {
+    func toDTO() -> MuscleRecoveryDTO {
+        MuscleRecoveryDTO(
+            muscleName: muscleName,
+            status: status.rawValue,
+            fatigueScore: fatigueScore,
+            remainingHours: remainingHours
+        )
+    }
+}
+
+private extension MuscleRecoveryDTO {
+    func toDomain() -> MuscleRecoveryItem {
+        MuscleRecoveryItem(
+            muscleName: muscleName,
+            status: RecoveryStatus(rawValue: status) ?? .unknown,
+            fatigueScore: fatigueScore,
+            remainingHours: remainingHours
+        )
+    }
+}
+
+private extension MealItem {
+    func toDTO() -> MealDTO {
+        MealDTO(
+            name: name,
+            calories: calories,
+            protein: protein,
+            carbs: carbs,
+            fat: fat,
+            confidence: confidence,
+            needsConfirmation: needsConfirmation,
+            questions: questions
+        )
+    }
+}
+
+private extension MealDTO {
+    func toDomain() -> MealItem {
+        MealItem(
+            name: name,
+            calories: calories,
+            protein: protein,
+            carbs: carbs,
+            fat: fat,
+            confidence: confidence,
+            needsConfirmation: needsConfirmation,
+            questions: questions
+        )
+    }
+}
+
+private extension CoachAdvice {
+    func toDTO() -> CoachAdviceDTO {
+        CoachAdviceDTO(
+            readinessScore: readinessScore,
+            training: training,
+            nutrition: nutrition,
+            recovery: recovery,
+            warning: warning,
+            missingData: missingData
+        )
+    }
+}
+
+private extension CoachAdviceDTO {
+    func toDomain() -> CoachAdvice {
+        CoachAdvice(
+            readinessScore: readinessScore,
+            training: training,
+            nutrition: nutrition,
+            recovery: recovery,
+            warning: warning,
+            missingData: missingData
+        )
     }
 }
