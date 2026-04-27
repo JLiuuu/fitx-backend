@@ -38,6 +38,7 @@ final class NutritionViewModel: ObservableObject {
     private let appState: AppState
     init(appState: AppState) { self.appState = appState }
     var meals: [MealItem] { appState.meals }
+    var latestDetectionSummary: String { appState.lastMealDetectionSummary }
 
     func scanMeal() async {
         await appState.scanMeal()

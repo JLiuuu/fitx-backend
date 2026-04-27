@@ -87,6 +87,9 @@ struct MealItem: Identifiable {
     let protein: Int
     let carbs: Int
     let fat: Int
+    let confidence: Double
+    let needsConfirmation: Bool
+    let questions: [String]
 }
 
 struct CoachAdvice {
@@ -121,6 +124,14 @@ struct WorkoutInput {
 
 struct MealScanResult {
     let meal: MealItem
+    let foods: [DetectedFood]
+}
+
+struct DetectedFood: Identifiable {
+    let id = UUID()
+    let name: String
+    let estimatedWeightGram: Int
+    let confidence: Double
 }
 
 enum HealthAuthorizationStatus: String {
@@ -158,8 +169,8 @@ enum MockData {
     ]
 
     static let meals: [MealItem] = [
-        .init(name: "Chicken Breast + Rice", calories: 620, protein: 48, carbs: 72, fat: 14),
-        .init(name: "Greek Yogurt + Berries", calories: 260, protein: 24, carbs: 28, fat: 6)
+        .init(name: "Chicken Breast + Rice", calories: 620, protein: 48, carbs: 72, fat: 14, confidence: 0.92, needsConfirmation: false, questions: []),
+        .init(name: "Greek Yogurt + Berries", calories: 260, protein: 24, carbs: 28, fat: 6, confidence: 0.89, needsConfirmation: false, questions: [])
     ]
 
     static let coachAdvice = CoachAdvice(

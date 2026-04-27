@@ -121,8 +121,19 @@ final class MealScannerService {
                 calories: 540,
                 protein: 38,
                 carbs: 52,
-                fat: 18
-            )
+                fat: 18,
+                confidence: 0.81,
+                needsConfirmation: true,
+                questions: [
+                    "Was extra oil used in the salmon?",
+                    "Is this a small, medium, or large rice portion?"
+                ]
+            ),
+            foods: [
+                DetectedFood(name: "salmon", estimatedWeightGram: 160, confidence: 0.86),
+                DetectedFood(name: "white rice", estimatedWeightGram: 180, confidence: 0.77),
+                DetectedFood(name: "broccoli", estimatedWeightGram: 75, confidence: 0.83)
+            ]
         )
     }
 }

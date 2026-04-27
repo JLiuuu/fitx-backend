@@ -154,6 +154,14 @@ struct NutritionView: View {
                 .padding(.horizontal)
                 .disabled(isScanning)
 
+                GroupBox("Last Detection") {
+                    Text(viewModel.latestDetectionSummary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.horizontal)
+
                 List(viewModel.meals) { meal in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(meal.name)
@@ -161,6 +169,19 @@ struct NutritionView: View {
                         Text("kcal \(meal.calories), P \(meal.protein)g, C \(meal.carbs)g, F \(meal.fat)g")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
+                        Text("Confidence: \(Int(meal.confidence * 100))%")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        if meal.needsConfirmation {
+                            Text("Needs user confirmation")
+                                .font(.caption)
+                                .foregroundStyle(.yellow)
+                            ForEach(meal.questions, id: \.self) { question in
+                                Text("• \(question)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
             }
