@@ -169,13 +169,16 @@ struct CoachEngine {
         case .denied:
             missingData = "Health access denied. Enable permissions for better readiness accuracy."
         }
+        let planNotice = context.subscriptionPlan == .pro
+            ? "Pro plan active: advanced AI features unlocked."
+            : "Free plan: meal scanning quota is limited."
 
         return CoachAdvice(
             readinessScore: context.dashboard.readinessScore,
             training: training,
             nutrition: nutrition,
             recovery: recovery,
-            warning: warning,
+            warning: "\(warning) \(planNotice)",
             missingData: missingData
         )
     }

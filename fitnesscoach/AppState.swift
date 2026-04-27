@@ -6,6 +6,10 @@ final class AppState: ObservableObject {
     @Published var recoveryItems: [MuscleRecoveryItem]
     @Published var meals: [MealItem]
     @Published var coachAdvice: CoachAdvice
+    @Published var subscriptionPlan: SubscriptionPlan = .free
+    @Published var dailyMealScanCount: Int = 0
+    @Published var mealScanDailyLimit: Int = 1
+    @Published var lastSubscriptionMessage: String = "Free plan active."
     @Published var healthStatus: HealthAuthorizationStatus = .notRequested
     @Published var latestHealthSummary: String = "No HealthKit sync yet."
     @Published var lastWorkoutSummary: String = "No workout saved yet."
@@ -40,8 +44,13 @@ final class AppState: ObservableObject {
     }
 
     func scanMeal() async {
+        guard canScanMeal() else {
+            lastMealDetectionSummary = "Daily scan quota reached. Upgrade to Pro for unlimited scans."
+            return
+        }
         let result = await mealScanner.scanMockMeal()
         meals.insert(result.meal, at: 0)
+        dailyMealScanCount += 1
         if result.foods.isEmpty {
             lastMealDetectionSummary = "No foods detected."
         } else {
@@ -58,8 +67,29 @@ final class AppState: ObservableObject {
                 dashboard: dashboard,
                 recoveryItems: recoveryItems,
                 mealsToday: meals.count,
-                healthStatus: healthStatus
+                healthStatus: healthStatus,
+                subscriptionPlan: subscriptionPlan
             )
         )
+    }
+
+    func setSubscriptionPlan(_ plan: SubscriptionPlan) {
+        subscriptionPlan = plan
+        mealScanDailyLimit = plan == .pro ? Int.max : 1
+        lastSubscriptionMessage = plan == .pro
+            ? "Pro plan active. Unlimited meal scans enabled."
+            : "Free plan active. 1 meal scan per day."
+        refreshCoachAdvice()
+    }
+
+    func canScanMeal() -> Bool {
+        subscriptionPlan == .pro || dailyMealScanCount < mealScanDailyLimit
+    }
+
+    func remainingMealScansText() -> String {
+        if subscriptionPlan == .pro {
+            return "Unlimited scans"
+        }
+        return "\(max(0, mealScanDailyLimit - dailyMealScanCount)) / \(mealScanDailyLimit) scans left today"
     }
 }

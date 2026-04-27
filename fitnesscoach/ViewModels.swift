@@ -39,6 +39,8 @@ final class NutritionViewModel: ObservableObject {
     init(appState: AppState) { self.appState = appState }
     var meals: [MealItem] { appState.meals }
     var latestDetectionSummary: String { appState.lastMealDetectionSummary }
+    var canScan: Bool { appState.canScanMeal() }
+    var scanQuotaText: String { appState.remainingMealScansText() }
 
     func scanMeal() async {
         await appState.scanMeal()
@@ -63,8 +65,15 @@ final class ProfileViewModel: ObservableObject {
 
     var healthStatus: HealthAuthorizationStatus { appState.healthStatus }
     var latestHealthSummary: String { appState.latestHealthSummary }
+    var subscriptionPlan: SubscriptionPlan { appState.subscriptionPlan }
+    var subscriptionMessage: String { appState.lastSubscriptionMessage }
+    var scanQuotaText: String { appState.remainingMealScansText() }
 
     func requestHealthPermission() async {
         await appState.requestHealthAccess()
+    }
+
+    func setPlan(_ plan: SubscriptionPlan) {
+        appState.setSubscriptionPlan(plan)
     }
 }

@@ -150,11 +150,17 @@ struct HealthSyncResult {
     let summary: String
 }
 
+enum SubscriptionPlan: String {
+    case free = "Free"
+    case pro = "Pro"
+}
+
 struct CoachContext {
     let dashboard: TodayDashboard
     let recoveryItems: [MuscleRecoveryItem]
     let mealsToday: Int
     let healthStatus: HealthAuthorizationStatus
+    let subscriptionPlan: SubscriptionPlan
 }
 
 enum MockData {

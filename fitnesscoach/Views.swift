@@ -152,7 +152,13 @@ struct NutritionView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .padding(.horizontal)
-                .disabled(isScanning)
+                .disabled(isScanning || !viewModel.canScan)
+
+                Text(viewModel.scanQuotaText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
 
                 GroupBox("Last Detection") {
                     Text(viewModel.latestDetectionSummary)
@@ -254,8 +260,19 @@ struct ProfileView: View {
                 }
 
                 Section("Subscription") {
-                    Text("Plan: Free")
-                    Text("Scan Quota: 1 / day")
+                    Picker("Plan", selection: Binding(
+                        get: { viewModel.subscriptionPlan },
+                        set: { viewModel.setPlan($0) }
+                    )) {
+                        Text("Free").tag(SubscriptionPlan.free)
+                        Text("Pro").tag(SubscriptionPlan.pro)
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text(viewModel.subscriptionMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Scan Quota: \(viewModel.scanQuotaText)")
                 }
             }
             .navigationTitle("Profile")
