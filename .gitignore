@@ -1,2 +1,8 @@
 .DS_Store
 .derivedData/
+backend/.venv/
+backend/.env
+__pycache__/
+*.pyc
+*.profraw
+build_*.log
