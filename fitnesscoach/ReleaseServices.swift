@@ -2,6 +2,19 @@ import Foundation
 import StoreKit
 
 enum AppConfig {
+    enum RuntimeMode: String {
+        case development
+        case release
+    }
+
+    static let runtimeMode: RuntimeMode = {
+        let raw = (ProcessInfo.processInfo.environment["FITX_RUNTIME_MODE"] ?? "development").lowercased()
+        return RuntimeMode(rawValue: raw) ?? .development
+    }()
+
+    static var isReleaseMode: Bool { runtimeMode == .release }
+    static var isDevelopmentMode: Bool { !isReleaseMode }
+
     static let backendBaseURLString = ProcessInfo.processInfo.environment["FITNESS_BACKEND_URL"] ?? "http://localhost:8000"
     static let proMonthlyProductID = "com.fitnesscoach.pro.monthly"
     static let proYearlyProductID = "com.fitnesscoach.pro.yearly"
@@ -19,6 +32,28 @@ struct CoachAPIResponse: Codable {
     let recovery: String
     let warning: String
     let missingData: String
+}
+
+struct WorkoutAssistantAPIResponse: Codable {
+    let reply: String
+    let exercise: String?
+    let sets: Int?
+    let reps: Int?
+    let weight: Double?
+    let rpe: Int?
+}
+
+struct MealAssistantAPIResponse: Codable {
+    let reply: String
+    let name: String?
+    let calories: Int?
+    let protein: Int?
+    let carbs: Int?
+    let fat: Int?
+}
+
+struct ChatAssistantAPIResponse: Codable {
+    let reply: String
 }
 
 final class APIClient {
@@ -76,6 +111,48 @@ final class APIClient {
             missingData: decoded.missingData
         )
     }
+
+    func parseWorkoutAssistant(userID: String, message: String) async throws -> WorkoutAssistantAPIResponse {
+        guard let baseURL else { throw APIError.invalidURL }
+        let url = baseURL.appending(path: "/api/assistant/workout")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(AssistantRequestPayload(userId: userID, message: message))
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
+            throw APIError.invalidResponse
+        }
+        return try JSONDecoder().decode(WorkoutAssistantAPIResponse.self, from: data)
+    }
+
+    func parseMealAssistant(userID: String, message: String) async throws -> MealAssistantAPIResponse {
+        guard let baseURL else { throw APIError.invalidURL }
+        let url = baseURL.appending(path: "/api/assistant/meal")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(AssistantRequestPayload(userId: userID, message: message))
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
+            throw APIError.invalidResponse
+        }
+        return try JSONDecoder().decode(MealAssistantAPIResponse.self, from: data)
+    }
+
+    func parseChatAssistant(userID: String, message: String) async throws -> ChatAssistantAPIResponse {
+        guard let baseURL else { throw APIError.invalidURL }
+        let url = baseURL.appending(path: "/api/assistant/chat")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(AssistantRequestPayload(userId: userID, message: message))
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
+            throw APIError.invalidResponse
+        }
+        return try JSONDecoder().decode(ChatAssistantAPIResponse.self, from: data)
+    }
 }
 
 private struct CoachRequestPayload: Codable {
@@ -85,6 +162,11 @@ private struct CoachRequestPayload: Codable {
     let calorieGoal: Int
     let mealsCount: Int
     let fatiguedMuscles: [String]
+}
+
+private struct AssistantRequestPayload: Codable {
+    let userId: String
+    let message: String
 }
 
 private struct MealScanAPIResponse: Codable {
@@ -101,6 +183,7 @@ private struct MealScanAPIResponse: Codable {
     func toDomain() -> MealScanResult {
         MealScanResult(
             meal: MealItem(
+                id: UUID(),
                 name: mealName,
                 calories: calories,
                 protein: protein,
@@ -108,7 +191,9 @@ private struct MealScanAPIResponse: Codable {
                 fat: fat,
                 confidence: confidence,
                 needsConfirmation: needsUserConfirmation,
-                questions: questions
+                questions: questions,
+                loggedAt: Date(),
+                source: .aiScan
             ),
             foods: foods.map { DetectedFood(name: $0.name, estimatedWeightGram: $0.estimatedWeightGram, confidence: $0.confidence) }
         )

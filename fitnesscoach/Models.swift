@@ -1,5 +1,123 @@
 import SwiftUI
 
+enum HeightUnit: String, Codable, CaseIterable {
+    case cm
+    case ftIn
+}
+
+enum WeightUnit: String, Codable, CaseIterable {
+    case kg
+    case lbs
+}
+
+enum Sex: String, Codable, CaseIterable, Identifiable {
+    case male = "Male"
+    case female = "Female"
+
+    var id: String { rawValue }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = (try? container.decode(String.self)) ?? ""
+        self = Sex(rawValue: raw) ?? .male
+    }
+}
+
+enum PrimaryGoal: String, Codable, CaseIterable, Identifiable {
+    case muscleGain = "Muscle Gain"
+    case fatLoss = "Fat Loss"
+
+    var id: String { rawValue }
+}
+
+enum ActivityLevel: String, Codable, CaseIterable, Identifiable {
+    case low = "Low"
+    case medium = "Medium"
+    case high = "High"
+
+    var id: String { rawValue }
+
+    var multiplier: Double {
+        switch self {
+        case .low: return 1.3
+        case .medium: return 1.45
+        case .high: return 1.6
+        }
+    }
+}
+
+struct UserProfile: Codable {
+    let age: Int
+    let sex: Sex
+    let heightCm: Double
+    let weightKg: Double
+    let preferredHeightUnit: HeightUnit
+    let preferredWeightUnit: WeightUnit
+    let primaryGoal: PrimaryGoal
+    let activityLevel: ActivityLevel
+    let calorieDeltaGoalKcal: Int
+    let dailyWorkoutGoalKcal: Int
+
+    var bmi: Double {
+        guard heightCm > 0 else { return 0 }
+        let meters = heightCm / 100.0
+        return weightKg / (meters * meters)
+    }
+
+    var bmr: Double {
+        // Mifflin-St Jeor baseline.
+        let sexOffset: Double
+        switch sex {
+        case .male: sexOffset = 5
+        case .female: sexOffset = -161
+        }
+        return (10 * weightKg) + (6.25 * heightCm) - (5 * Double(age)) + sexOffset
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case age, sex, heightCm, weightKg, preferredHeightUnit, preferredWeightUnit, primaryGoal, activityLevel, calorieDeltaGoalKcal, dailyWorkoutGoalKcal
+    }
+
+    init(
+        age: Int,
+        sex: Sex,
+        heightCm: Double,
+        weightKg: Double,
+        preferredHeightUnit: HeightUnit,
+        preferredWeightUnit: WeightUnit,
+        primaryGoal: PrimaryGoal,
+        activityLevel: ActivityLevel,
+        calorieDeltaGoalKcal: Int,
+        dailyWorkoutGoalKcal: Int
+    ) {
+        self.age = age
+        self.sex = sex
+        self.heightCm = heightCm
+        self.weightKg = weightKg
+        self.preferredHeightUnit = preferredHeightUnit
+        self.preferredWeightUnit = preferredWeightUnit
+        self.primaryGoal = primaryGoal
+        self.activityLevel = activityLevel
+        self.calorieDeltaGoalKcal = calorieDeltaGoalKcal
+        self.dailyWorkoutGoalKcal = dailyWorkoutGoalKcal
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        age = try container.decode(Int.self, forKey: .age)
+        sex = try container.decode(Sex.self, forKey: .sex)
+        heightCm = try container.decode(Double.self, forKey: .heightCm)
+        weightKg = try container.decode(Double.self, forKey: .weightKg)
+        preferredHeightUnit = try container.decode(HeightUnit.self, forKey: .preferredHeightUnit)
+        preferredWeightUnit = try container.decode(WeightUnit.self, forKey: .preferredWeightUnit)
+        primaryGoal = try container.decodeIfPresent(PrimaryGoal.self, forKey: .primaryGoal) ?? .muscleGain
+        activityLevel = try container.decodeIfPresent(ActivityLevel.self, forKey: .activityLevel) ?? .medium
+        calorieDeltaGoalKcal = try container.decodeIfPresent(Int.self, forKey: .calorieDeltaGoalKcal)
+            ?? (primaryGoal == .muscleGain ? 700 : -700)
+        dailyWorkoutGoalKcal = try container.decodeIfPresent(Int.self, forKey: .dailyWorkoutGoalKcal) ?? 300
+    }
+}
+
 struct TodayDashboard {
     let readinessScore: Int
     let statusText: String
@@ -54,6 +172,38 @@ struct TodayDashboard {
             fatConsumed: fatConsumed + fat
         )
     }
+
+    func withNutritionGoals(calorieGoal: Int, proteinGoal: Int, carbsGoal: Int, fatGoal: Int) -> TodayDashboard {
+        TodayDashboard(
+            readinessScore: readinessScore,
+            statusText: statusText,
+            trainingRecommendation: trainingRecommendation,
+            calorieGoal: calorieGoal,
+            caloriesConsumed: caloriesConsumed,
+            proteinGoal: proteinGoal,
+            proteinConsumed: proteinConsumed,
+            carbsGoal: carbsGoal,
+            carbsConsumed: carbsConsumed,
+            fatGoal: fatGoal,
+            fatConsumed: fatConsumed
+        )
+    }
+
+    func withNutritionConsumed(calories: Int, protein: Int, carbs: Int, fat: Int) -> TodayDashboard {
+        TodayDashboard(
+            readinessScore: readinessScore,
+            statusText: statusText,
+            trainingRecommendation: trainingRecommendation,
+            calorieGoal: calorieGoal,
+            caloriesConsumed: max(0, calories),
+            proteinGoal: proteinGoal,
+            proteinConsumed: max(0, protein),
+            carbsGoal: carbsGoal,
+            carbsConsumed: max(0, carbs),
+            fatGoal: fatGoal,
+            fatConsumed: max(0, fat)
+        )
+    }
 }
 
 struct MuscleRecoveryItem: Identifiable {
@@ -62,6 +212,27 @@ struct MuscleRecoveryItem: Identifiable {
     let status: RecoveryStatus
     let fatigueScore: Int
     let remainingHours: Int
+}
+
+enum MuscleCatalog {
+    static let frontGroups: [String] = [
+        "Chest",
+        "Shoulders (Front/Mid)",
+        "Biceps",
+        "Abs",
+        "Quads"
+    ]
+
+    static let backGroups: [String] = [
+        "Upper Back (Traps)",
+        "Lower Back",
+        "Triceps",
+        "Lats",
+        "Glutes",
+        "Hamstrings"
+    ]
+
+    static let allGroups: [String] = frontGroups + backGroups
 }
 
 enum RecoveryStatus: String {
@@ -81,7 +252,7 @@ enum RecoveryStatus: String {
 }
 
 struct MealItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let calories: Int
     let protein: Int
@@ -90,6 +261,59 @@ struct MealItem: Identifiable {
     let confidence: Double
     let needsConfirmation: Bool
     let questions: [String]
+    let loggedAt: Date
+    let source: MealSource
+}
+
+enum MealSource: String, Codable {
+    case manual = "Manual"
+    case aiScan = "AI Scan"
+}
+
+enum NutritionTimeRange: String, CaseIterable, Identifiable {
+    case day = "Day"
+    case week = "Week"
+    case month = "Month"
+    case year = "Year"
+
+    var id: String { rawValue }
+}
+
+struct NutritionSummary {
+    let calories: Int
+    let protein: Int
+    let carbs: Int
+    let fat: Int
+    let mealCount: Int
+}
+
+enum NutritionTrendWindow: String, CaseIterable, Identifiable {
+    case sevenDays = "7D"
+    case thirtyDays = "30D"
+
+    var id: String { rawValue }
+
+    var dayCount: Int {
+        switch self {
+        case .sevenDays: return 7
+        case .thirtyDays: return 30
+        }
+    }
+}
+
+struct NutritionTrendPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let calories: Int
+    let protein: Int
+    let carbs: Int
+    let fat: Int
+}
+
+struct WorkoutTrendPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let calories: Int
 }
 
 struct CoachAdvice {
@@ -118,12 +342,101 @@ struct CoachAdvice {
     }
 }
 
+enum TrainingIntensityLevel {
+    case green
+    case caution
+    case protect
+
+    var title: String {
+        switch self {
+        case .green: return "Green"
+        case .caution: return "Caution"
+        case .protect: return "Protect"
+        }
+    }
+
+    var guidance: String {
+        switch self {
+        case .green: return "Normal intensity is acceptable."
+        case .caution: return "Use moderate load and keep reps in reserve."
+        case .protect: return "Reduce volume and avoid max-effort lifts."
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .green: return .green
+        case .caution: return .yellow
+        case .protect: return .red
+        }
+    }
+}
+
+struct TrainingSignalExplanation: Identifiable {
+    let id: String
+    let title: String
+    let meaning: String
+    let todayAction: String
+
+    static func from(reason: String) -> TrainingSignalExplanation {
+        if reason.localizedCaseInsensitiveContains("Sleep Debt") {
+            return TrainingSignalExplanation(
+                id: "sleep-debt",
+                title: "Sleep Debt",
+                meaning: "Recent sleep duration or quality is below your recovery target.",
+                todayAction: "Reduce training volume and keep at least 2-3 reps in reserve."
+            )
+        }
+        if reason.localizedCaseInsensitiveContains("HRV Down") {
+            return TrainingSignalExplanation(
+                id: "hrv-down",
+                title: "HRV Down",
+                meaning: "Autonomic recovery signal is lower than your baseline.",
+                todayAction: "Avoid max effort work and prioritize technique-focused sets."
+            )
+        }
+        if reason.localizedCaseInsensitiveContains("RHR Elevated") {
+            return TrainingSignalExplanation(
+                id: "rhr-elevated",
+                title: "RHR Elevated",
+                meaning: "Resting heart rate is above baseline, often linked to stress or accumulated fatigue.",
+                todayAction: "Use conservative loads and extend warm-up and between-set recovery."
+            )
+        }
+        if reason.localizedCaseInsensitiveContains("Load High") {
+            return TrainingSignalExplanation(
+                id: "load-high",
+                title: "Load High",
+                meaning: "Recent total activity load is high relative to your recovery inputs.",
+                todayAction: "Cut total working sets and avoid adding extra accessory volume."
+            )
+        }
+        return TrainingSignalExplanation(
+            id: "no-risk",
+            title: "No Major Risk Signals",
+            meaning: "No critical recovery warnings were detected from current health signals.",
+            todayAction: "Proceed with normal intensity and monitor perceived exertion."
+        )
+    }
+}
+
 struct WorkoutInput {
     let exerciseName: String
     let sets: Int
     let reps: Int
     let weight: Double
     let rpe: Int
+}
+
+struct WorkoutLogItem: Identifiable {
+    let id: UUID
+    let exerciseName: String
+    let sets: Int
+    let reps: Int
+    let weight: Double
+    let rpe: Int
+    let estimatedCalories: Int
+    let loggedAt: Date
 }
 
 struct MealScanResult {
@@ -145,9 +458,19 @@ enum HealthAuthorizationStatus: String {
     case denied = "Denied"
 }
 
+enum VoicePermissionStatus: String {
+    case notRequested = "Not Requested"
+    case granted = "Granted"
+    case denied = "Denied"
+    case unavailable = "Unavailable on this platform"
+}
+
 struct HealthSyncResult {
     let status: HealthAuthorizationStatus
     let summary: String
+    let readinessScore: Int?
+    let insights: [String]
+    let exerciseMinutes: Double?
 }
 
 enum SubscriptionPlan: String {
@@ -160,6 +483,7 @@ struct CoachContext {
     let recoveryItems: [MuscleRecoveryItem]
     let mealsToday: Int
     let healthStatus: HealthAuthorizationStatus
+    let healthInsights: [String]
     let subscriptionPlan: SubscriptionPlan
 }
 
@@ -180,14 +504,21 @@ enum MockData {
 
     static let recoveryItems: [MuscleRecoveryItem] = [
         .init(muscleName: "Chest", status: .recovering, fatigueScore: 62, remainingHours: 18),
-        .init(muscleName: "Lats", status: .ready, fatigueScore: 26, remainingHours: 0),
-        .init(muscleName: "Quads", status: .fatigued, fatigueScore: 81, remainingHours: 24),
-        .init(muscleName: "Hamstrings", status: .recovering, fatigueScore: 59, remainingHours: 16)
+        .init(muscleName: "Shoulders (Front/Mid)", status: .recovering, fatigueScore: 56, remainingHours: 16),
+        .init(muscleName: "Biceps", status: .ready, fatigueScore: 30, remainingHours: 8),
+        .init(muscleName: "Abs", status: .ready, fatigueScore: 24, remainingHours: 6),
+        .init(muscleName: "Quads", status: .fatigued, fatigueScore: 81, remainingHours: 26),
+        .init(muscleName: "Upper Back (Traps)", status: .ready, fatigueScore: 28, remainingHours: 8),
+        .init(muscleName: "Lower Back", status: .ready, fatigueScore: 35, remainingHours: 10),
+        .init(muscleName: "Triceps", status: .recovering, fatigueScore: 58, remainingHours: 17),
+        .init(muscleName: "Lats", status: .ready, fatigueScore: 26, remainingHours: 8),
+        .init(muscleName: "Glutes", status: .recovering, fatigueScore: 59, remainingHours: 18),
+        .init(muscleName: "Hamstrings", status: .recovering, fatigueScore: 57, remainingHours: 17)
     ]
 
     static let meals: [MealItem] = [
-        .init(name: "Chicken Breast + Rice", calories: 620, protein: 48, carbs: 72, fat: 14, confidence: 0.92, needsConfirmation: false, questions: []),
-        .init(name: "Greek Yogurt + Berries", calories: 260, protein: 24, carbs: 28, fat: 6, confidence: 0.89, needsConfirmation: false, questions: [])
+        .init(id: UUID(), name: "Chicken Breast + Rice", calories: 620, protein: 48, carbs: 72, fat: 14, confidence: 0.92, needsConfirmation: false, questions: [], loggedAt: Date(), source: .manual),
+        .init(id: UUID(), name: "Greek Yogurt + Berries", calories: 260, protein: 24, carbs: 28, fat: 6, confidence: 0.89, needsConfirmation: false, questions: [], loggedAt: Date(), source: .manual)
     ]
 
     static let coachAdvice = CoachAdvice(

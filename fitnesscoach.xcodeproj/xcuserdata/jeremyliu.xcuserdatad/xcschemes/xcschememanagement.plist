@@ -4,10 +4,48 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>FitX iOS.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>fitnesscoach.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>A9217B6F2F9F95CF00B1B1D5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A9217B7D2F9F95D200B1B1D5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A9217B872F9F95D200B1B1D5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A934140D2FA24AA20056F962</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A93414192FA24AA40056F962</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>A93414232FA24AA40056F962</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

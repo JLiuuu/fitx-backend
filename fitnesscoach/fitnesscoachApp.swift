@@ -13,8 +13,7 @@ struct fitnesscoachApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(appState)
+            ContentView(appState: appState)
         }
     }
 }

@@ -1,0 +1,365 @@
+AI Fitness Coach基于 Apple Watch + Gemini AI 的智能健身决策 AppCursor 开发完整项目说明书 / PRD + 技术方案
+版本：MVP 规划版用途：直接发给 Cursor / 开发者生成 SwiftUI 项目骨架建议技术栈：SwiftUI + HealthKit + Backend API + Gemini API + Nutrition Database
+
+目录
+项目一句话介绍
+产品定位与核心价值
+目标用户与核心痛点
+产品核心闭环
+MVP 功能范围
+用户流程图
+主要页面设计
+核心功能模块说明
+Apple Watch / HealthKit 数据使用方案
+Gemini AI 接入方案
+食物拍照识别与营养计算方案
+肌肉恢复计算逻辑
+AI Coach 输出逻辑
+数据模型设计
+技术架构与工程目录
+订阅商业模式
+隐私、安全与合规说明
+开发里程碑与验收标准
+给 Cursor 的直接开发 Prompt
+官方参考文档
+
+项目一句话介绍
+产品定义
+这是一款基于 Apple Watch 健康数据和 Gemini AI 的智能健身决策 App，通过食物拍照识别、肌肉恢复分析、训练计划推荐和 AI Coach，帮助用户每天决定：今天该怎么练、怎么吃、哪些肌肉需要恢复。
+
+产品不是普通健身记录软件，也不是单纯卡路里计算器，而是一个每天给出健身决策的 AI 私人教练。
+核心问题 1：今天能不能练？应该练哪块肌肉？
+核心问题 2：今天该怎么练？动作、强度和训练日如何安排？
+核心问题 3：今天该怎么吃？热量、蛋白质、碳水和脂肪还差多少？
+核心问题 4：为什么系统这样推荐？AI Coach 需要给出清楚原因。
+产品定位与核心价值
+推荐产品定位：AI Fitness Decision Coach。中文可以叫“AI 健身决策教练”或“智能健身恢复与饮食教练”。
+维度
+说明
+核心定位
+基于 Apple Watch 和 Gemini AI 的健身训练、恢复、饮食决策系统
+核心卖点
+拍照识别食物 + 肌肉恢复热力图 + 今日训练建议 + AI Coach
+目标结果
+让用户每天不用纠结，直接知道今天练什么、吃什么、休息什么
+商业模式
+Freemium 免费基础功能 + Pro 订阅解锁 AI 和高级分析
+差异化
+不是只记录训练，而是把训练、恢复、饮食、Apple Watch 数据整合成决策建议
+
+目标用户与核心痛点
+用户类型
+痛点
+产品解决方式
+Apple Watch 健身用户
+有很多心率、HRV、睡眠数据，但不知道怎么用
+把数据转换成“今天练什么”的建议
+减脂用户
+不知道每餐多少卡，也不知道今天还能吃多少
+拍照识别食物，结合消耗计算热量缺口
+增肌用户
+不知道蛋白质够不够，训练后该怎么吃
+追踪蛋白质目标，给出训练后饮食建议
+Push/Pull/Legs 训练者
+不知道某块肌肉是否恢复，容易过度训练
+肌肉恢复热力图 + 恢复倒计时
+健身小白
+不知道该做哪些动作、怎么安排计划
+AI Coach 生成今日训练计划
+留学生/外卖用户
+中餐、外卖、餐厅食物难记录
+AI 识别食物并让用户确认份量
+
+产品核心闭环
+产品必须形成“每日使用闭环”，这样才有留存和订阅价值。
+用户打开 App-&gt; 自动同步 Apple Watch / HealthKit 数据-&gt; 查看今日恢复评分和肌肉热力图-&gt; AI Coach 推荐今日训练-&gt; 用户拍照记录饮食-&gt; 系统计算热量、蛋白质、碳水、脂肪-&gt; 根据训练目标和恢复状态更新建议-&gt; 用户完成训练/饮食记录-&gt; 第二天继续更新恢复状态和计划
+产品关键原则
+用户付费不是为了看复杂数据，而是为了得到清晰决策：今天练什么、吃什么、休息什么。
+
+MVP 功能范围
+第一版不需要做成很大，但必须跑通核心闭环：Apple Watch 数据 -&gt; 恢复判断 -&gt; 训练建议 -&gt; 拍照识别食物 -&gt; AI Coach 建议。
+优先级
+功能
+说明
+P0
+SwiftUI 首页
+展示今日恢复评分、肌肉热力图、训练建议、饮食进度
+P0
+Apple Health 授权
+读取 Workout、Heart Rate、HRV、Sleep、Active Energy 等数据
+P0
+手动添加训练
+用户输入动作、组数、次数、重量、RPE
+P0
+肌肉恢复热力图
+正面/背面人体肌肉图，颜色展示恢复状态
+P0
+拍照识别食物
+上传图片给后端，后端调用 Gemini 识别食物
+P0
+营养计算
+根据食物名称和估算克数计算 kcal、protein、carbs、fat
+P0
+AI Coach 每日建议
+输出今日训练、饮食、恢复建议
+P1
+历史趋势
+7 天/30 天训练、营养和恢复趋势
+P1
+订阅页面
+Free/Pro 功能区分，接入 StoreKit 2
+P2
+AI 自动训练计划
+自动调整 Push/Pull/Legs 或增肌减脂训练计划
+
+用户流程图
+6.1 首次使用流程
+打开 App-&gt; 欢迎页：说明产品价值-&gt; 选择目标：减脂 / 增肌 / 维持 / 提升力量-&gt; 连接 Apple Health-&gt; 授权读取健康数据-&gt; 填写基础信息：年龄、性别、身高、体重、训练经验-&gt; 选择训练方式：PPL / Upper-Lower / 自定义-&gt; 设置饮食目标：自动计算或手动输入-&gt; 进入首页 Today Dashboard
+6.2 日常使用流程
+打开 App-&gt; 同步 Apple Watch 数据-&gt; 显示今日恢复评分-&gt; 显示肌肉恢复热力图-&gt; AI 推荐今日训练-&gt; 用户拍照记录食物-&gt; 系统识别食物和份量-&gt; 用户确认/修改份量-&gt; 保存饮食记录-&gt; AI Coach 更新今日建议
+6.3 训练后流程
+训练结束-&gt; 同步 Apple Watch Workout-&gt; 用户确认训练类型-&gt; 用户添加具体动作和 RPE-&gt; 系统根据动作肌群参与比例计算疲劳-&gt; 更新每块肌肉恢复状态-&gt; AI Coach 生成恢复和饮食建议
+主要页面设计
+7.1 Home 首页 / Today Dashboard
+首页是产品最重要页面，目标是让用户 5 秒内知道今天该怎么做。
+顶部：- Today Readiness Score: 82 / 100- 状态文案：Ready for Pull Day中间：- 正面/背面人体肌肉恢复热力图- 绿色 Ready，黄色 Recovering，红色 Fatigued，灰色 Unknown- Turn Around 按钮切换正面/背面底部卡片：1. 今日推荐训练：Pull Day2. 今日饮食目标：还差 62g 蛋白质，剩余 850 kcal3. 恢复提醒：腿部还需 24h，胸肌还需 10h4. Apple Watch 状态：HRV、睡眠、静息心率、活动消耗
+7.2 Recovery 肌肉恢复页
+页面功能：- 显示所有肌群恢复状态- 点击肌肉进入详情- 显示剩余恢复时间、疲劳分数、最近训练记录肌肉详情页示例：Chest RecoveryStatus: RecoveringRemaining: 18hFatigue Score: 62 / 100Reason: Bench Press yesterday + HRV lower than baseline + Sleep only 6hSuggestion: Avoid heavy chest pressing today.
+7.3 Workout 训练页
+功能：- 导入 Apple Watch Workout- 手动添加训练动作- 输入 sets / reps / weight / RPE- 快速复用上次训练- 保存后更新肌肉疲劳示例：Bench Press | 4 sets x 8 reps | 80 kg | RPE 8Incline DB Press | 3 sets x 10 reps | 30 kg | RPE 7Triceps Pushdown | 3 sets x 12 reps | RPE 8
+7.4 Nutrition 饮食页
+功能：- Scan Meal 拍照识别食物- 显示今日已摄入热量和三大营养素- 显示目标值与剩余值- 支持用户调整食物份量- 保存常吃食物页面关键指标：Calories: 1520 / 2300 kcalProtein: 118 / 180 gCarbs: 165 / 250 gFat: 45 / 70 gApple Watch Energy Burned: 650 kcalCurrent Deficit: -520 kcal
+7.5 AI Coach 页面
+AI Coach 不要只做聊天框，应该先展示结构化建议卡片，聊天作为补充。
+Today AI CoachTraining:建议 Pull Day，中等强度。避免高强度腿部训练。Nutrition:今天蛋白质还差 62g。如果晚上训练，建议训练前补充 40-60g 碳水。Recovery:腿部还需约 24h 恢复。今晚建议睡眠目标 7.5h 以上。用户可继续提问：- 我今天还能吃 Panda Express 吗？- 我腿还酸，今天可以练胸吗？- 我蛋白质还差 50g，晚餐吃什么？
+核心功能模块说明
+模块
+职责
+备注
+Food Vision Engine
+识别食物图片，估算食物种类和份量
+由后端调用 Gemini，不在前端直接调用
+Nutrition Engine
+计算热量、蛋白质、碳水、脂肪
+优先使用营养数据库，不要只让 AI 猜
+Recovery Engine
+计算肌肉疲劳和恢复时间
+结合训练记录、RPE、肌群参与比例、HealthKit 数据
+Training Decision Engine
+推荐今日训练内容
+根据肌肉恢复状态和用户目标动态调整
+AI Coach Engine
+生成自然语言建议
+调用 Gemini，输出结构化建议
+Subscription Engine
+控制 Free/Pro 权限
+使用 StoreKit 2 验证订阅状态
+Health Sync Engine
+读取 Apple Watch / HealthKit 数据
+需要用户授权，注意隐私提示
+
+Apple Watch / HealthKit 数据使用方案
+Apple Watch 不能直接检测某一块肌肉是否恢复。正确表达是：基于 HealthKit 数据和训练记录，对肌肉恢复状态进行智能估算。
+HealthKit 数据
+用途
+影响
+Workout
+读取训练类型、时长、消耗
+判断训练负荷
+Heart Rate
+训练强度和恢复状态
+训练心率越高，恢复需求可能越高
+HRV
+反映身体恢复/压力趋势
+HRV 低于基线时延长恢复时间
+Resting Heart Rate
+判断疲劳和恢复不足
+静息心率升高时提高疲劳系数
+Sleep Analysis
+睡眠时长和质量
+睡眠不足时延长恢复时间
+Active Energy
+当天活动消耗
+用于饮食热量缺口计算
+Body Mass
+用户体重
+用于饮食目标和能量估算
+Steps / Distance
+日常活动负担
+影响腿部恢复和总活动消耗
+
+重要实现原则
+HealthKit 权限必须明确说明用途；只读取必要数据；用户可以随时关闭授权；不要在界面中声称“医学诊断”或“精准检测肌肉”。
+
+Gemini AI 接入方案
+Gemini 在产品里承担两个主要角色：1）多模态食物识别；2）AI Coach 生成训练、饮食和恢复建议。
+10.1 后端调用原则
+不要把 Gemini API Key 写在 SwiftUI App 里。
+iOS App 只调用自己的后端接口，例如 /api/meal/scan 和 /api/coach/today。
+后端负责调用 Gemini、做用户权限验证、限流、缓存、日志和成本控制。
+Gemini 输出必须尽量使用 JSON Schema / structured output，方便 App 稳定解析。
+所有 AI 结果都要允许用户确认和修改，尤其是食物份量。
+10.2 Gemini 食物识别 Prompt
+You are a nutrition image recognition assistant.Analyze the meal image and identify visible foods.Estimate portion size in grams when possible.Return only valid JSON following the provided schema.Rules:- If portion size is uncertain, set needs_user_confirmation to true.- Do not provide medical diagnosis.- Include confidence scores for each food item.- Ask clarification questions when oil, sauce, cooking method, or portion size is unclear.- Prefer common food names that can be matched to a nutrition database.- Do not invent hidden ingredients unless visually likely.
+10.3 食物识别 JSON 输出格式
+{  "meal_name": "Chicken breast with rice and broccoli",  "meal_type": "lunch",  "foods": [    {      "name": "chicken breast",      "estimated_weight_g": 180,      "confidence": 0.86,      "portion_note": "about one medium chicken breast"    },    {      "name": "white rice",      "estimated_weight_g": 150,      "confidence": 0.75,      "portion_note": "about one small bowl"    }  ],  "needs_user_confirmation": true,  "questions": [    "Was the chicken cooked with oil?",    "Is the rice portion closer to a small, medium, or large bowl?"  ]}
+10.4 AI Coach Prompt
+You are an AI fitness coach.Use the user's workout data, nutrition data, recovery status, sleep, HRV, heart rate, and goals to provide practical fitness advice.Rules:- Do not claim medical diagnosis.- Keep advice concise and actionable.- Explain the reason behind each recommendation.- Provide today's training recommendation, nutrition recommendation, recovery advice, and risk warning.- If data is missing, say what is missing and give a conservative recommendation.- Avoid extreme diet or unsafe training advice.
+食物拍照识别与营养计算方案
+不要让 Gemini 直接负责最终营养计算。更稳定的方案是：Gemini 识别食物和份量，营养数据库负责营养数据，App/后端负责计算。
+用户拍照-&gt; App 压缩图片并上传后端-&gt; 后端调用 Gemini Vision 识别食物和估算克数-&gt; 后端匹配营养数据库-&gt; 计算 calories / protein / carbs / fat-&gt; 返回 App-&gt; 用户确认/修改份量-&gt; 保存到 Daily Nutrition-&gt; AI Coach 更新今日建议
+场景
+处理方式
+普通食物
+使用数据库按克数计算营养
+中餐/混合菜
+识别主要食材，让用户确认份量、油量、酱料
+餐厅/外卖
+优先匹配品牌/菜单；无法匹配时使用估算并提示不确定性
+用户不确定份量
+提供“小份/中份/大份”快捷选择
+AI 置信度低
+标记 needs_user_confirmation，要求用户调整
+
+肌肉恢复计算逻辑
+恢复模型需要先用简单、可解释的规则跑通，后期再逐步机器学习化。
+12.1 肌肉疲劳分数
+Muscle Fatigue Score =Exercise Load x Muscle Contribution x Intensity Factor x Volume Factor x Health ModifierExercise Load: 动作负荷，可由 sets、reps、weight、duration 估算Muscle Contribution: 动作对不同肌肉的参与比例Intensity Factor: RPE 和训练心率修正Volume Factor: 总训练量修正Health Modifier: HRV、睡眠、静息心率等 Apple Watch 数据修正
+12.2 动作肌肉参与比例示例
+动作
+主要肌群参与比例
+Bench Press
+Chest 60%, Triceps 25%, Shoulders 15%
+Squat
+Quads 45%, Glutes 30%, Hamstrings 15%, Core 10%
+Pull-up
+Lats 50%, Biceps 25%, Upper Back 15%, Core 10%
+Deadlift
+Hamstrings 30%, Glutes 30%, Upper Back 20%, Core 20%
+Shoulder Press
+Shoulders 60%, Triceps 25%, Upper Chest 15%
+
+12.3 恢复状态颜色
+状态
+颜色
+含义
+Ready
+Green
+基本恢复，可以正常训练
+Recovering
+Yellow
+尚未完全恢复，建议低中强度或减少训练量
+Fatigued
+Red
+疲劳较高，不建议训练该肌群
+Unknown
+Gray
+数据不足，无法判断
+
+AI Coach 输出逻辑
+AI Coach 每天应该输出结构化建议，而不是随便聊天。建议返回以下字段。
+{  "readiness_score": 82,  "training_recommendation": {    "title": "Pull Day - Moderate Intensity",    "recommended_muscles": ["lats", "biceps", "upper_back"],    "avoid_muscles": ["quads", "hamstrings", "glutes"],    "reason": "Leg muscles are still fatigued and HRV is below baseline."  },  "nutrition_recommendation": {    "calories_remaining": 850,    "protein_remaining_g": 62,    "suggestion": "Choose a high-protein dinner with moderate carbs."  },  "recovery_advice": {    "sleep_target_hours": 7.5,    "mobility_suggestion": "10 minutes light stretching for legs"  },  "warning": "Avoid heavy squats today."}
+数据模型设计
+14.1 UserProfile
+UserProfile- id- age- gender- heightCm- weightKg- goal: fat_loss / muscle_gain / maintenance / strength- trainingExperience- trainingSplit- calorieGoal- proteinGoal- carbsGoal- fatGoal- recoveryMode: conservative / standard / aggressive
+14.2 Meal / FoodItem / DailyNutrition
+Meal- id- userId- imageUrl- mealType: breakfast / lunch / dinner / snack- totalCalories- totalProtein- totalCarbs- totalFat- createdAtFoodItem- id- mealId- name- estimatedWeightGram- calories- protein- carbs- fat- confidence- source: gemini / manual / databaseDailyNutrition- userId- date- calorieGoal- caloriesConsumed- proteinGoal- proteinConsumed- carbsGoal- carbsConsumed- fatGoal- fatConsumed- appleWatchEnergyBurned- calorieDeficitOrSurplus
+14.3 Workout / Exercise / MuscleRecovery
+WorkoutRecord- id- userId- date- workoutType- durationMinutes- activeEnergyKcal- avgHeartRate- source: apple_watch / manual- exercisesExerciseRecord- id- workoutId- exerciseName- sets- reps- weight- rpe- muscleContributionMapMuscleRecovery- userId- muscleId- muscleName- fatigueScore- recoveryStatus- remainingHours- lastTrainedAt- trendData
+技术架构与工程目录
+15.1 推荐技术栈
+层级
+技术
+iOS Frontend
+SwiftUI, MVVM, SwiftData/CoreData, Swift Charts
+Health Data
+HealthKit, HKWorkout, HR, HRV, Sleep, Active Energy
+Camera
+PhotosPicker / Camera capture
+Backend
+FastAPI 或 Node.js / Express / NestJS
+AI
+Gemini API: image understanding, structured output, function calling
+Nutrition DB
+USDA FoodData Central 或自建食物营养数据库
+Database
+PostgreSQL / Supabase / Firebase
+Storage
+Cloud Storage / S3 compatible image storage
+Subscription
+StoreKit 2 + 后端收据/订阅状态校验
+
+15.2 SwiftUI 工程目录建议
+AI Fitness Coach/├── App/│   └── AIFitnessCoachApp.swift├── Core/│   ├── HealthKitManager.swift│   ├── APIClient.swift│   ├── SubscriptionManager.swift│   └── AppConfig.swift├── Models/│   ├── UserProfile.swift│   ├── Meal.swift│   ├── FoodItem.swift│   ├── WorkoutRecord.swift│   ├── ExerciseRecord.swift│   └── MuscleRecovery.swift├── ViewModels/│   ├── HomeViewModel.swift│   ├── RecoveryViewModel.swift│   ├── WorkoutViewModel.swift│   ├── NutritionViewModel.swift│   └── CoachViewModel.swift├── Views/│   ├── HomeView.swift│   ├── RecoveryView.swift│   ├── WorkoutView.swift│   ├── NutritionView.swift│   ├── CoachView.swift│   └── ProfileView.swift├── Components/│   ├── MuscleHeatmapView.swift│   ├── RecoveryCard.swift│   ├── NutritionProgressCard.swift│   └── CoachAdviceCard.swift└── Services/    ├── RecoveryCalculator.swift    ├── NutritionCalculator.swift    └── WorkoutParser.swift
+15.3 后端 API 路由建议
+POST /api/meal/scan- input: image file, userId, mealType- output: detected foods, estimated grams, nutrition totals, confirmation questionsPOST /api/meal/save- input: confirmed food items and portions- output: updated daily nutritionGET /api/coach/today- input: userId, date- output: training, nutrition, recovery advicePOST /api/workout/save- input: workout record and exercises- output: updated muscle recoveryGET /api/recovery/today- input: userId- output: muscle recovery list and readiness scoreGET /api/subscription/status- input: userId- output: free/pro status and usage limits
+订阅商业模式
+因为 Gemini API、图片识别和 AI Coach 都有持续成本，所以 AI 功能必须放进 Pro 订阅中。
+版本
+功能
+Free
+每日 1 次食物拍照识别；基础热量统计；基础肌肉恢复状态；手动训练记录；基础 AI 建议
+Pro
+更多/无限拍照识别；每块肌肉恢复倒计时；AI 今日训练计划；Apple Watch 深度分析；饮食目标自动计算；每周总结；30/90 天趋势；过度训练提醒
+
+市场
+建议价格
+美国
+$6.99/month 或 $49.99/year；AI Coach 成熟后可提高到 $9.99/month 或 $69.99/year
+中国
+¥28/month 或 ¥198/year；早期可做首年优惠
+买断
+可选 Lifetime $99.99，用于早期现金流和种子用户
+
+隐私、安全与合规说明
+不要声称 App 可以医学诊断或精准检测肌肉恢复。正确说法是“基于数据的智能估算”。
+HealthKit 数据必须在用户授权后读取，并清楚说明用途。
+Gemini API Key 只能放在后端，不能放进 iOS 客户端。
+食物照片属于用户隐私，上传前应说明用途，后端应支持删除图片。
+AI 饮食建议不能极端节食，不能替代医生或营养师建议。
+所有 AI 识别的食物份量都应允许用户修改。
+订阅功能要清楚标注免费额度和 Pro 权益。
+免责声明建议文案
+Recovery and nutrition insights are estimates based on your health data, workout logs, and user inputs. This app does not provide medical diagnosis or treatment advice. Please consult a healthcare professional for medical concerns.
+
+开发里程碑与验收标准
+阶段
+目标
+验收标准
+Milestone 1
+SwiftUI 项目骨架
+底部 Tab、首页、Recovery、Workout、Nutrition、Coach、Profile 页面可运行
+Milestone 2
+HealthKit 授权与读取
+可以请求权限并读取 Workout、Active Energy、HR、HRV、Sleep 的示例数据
+Milestone 3
+训练记录与恢复计算
+用户添加训练后，肌肉热力图颜色和恢复时间能更新
+Milestone 4
+拍照识别食物
+用户拍照上传后，后端返回食物列表和营养估算
+Milestone 5
+AI Coach
+根据训练、营养、恢复数据输出今日建议卡片
+Milestone 6
+订阅限制
+Free/Pro 功能区分，免费用户有识别次数限制
+Milestone 7
+数据持久化
+训练、饮食、恢复历史可以保存和再次打开
+Milestone 8
+可测试 Beta
+完整闭环跑通：同步数据、记录训练、扫餐、保存、生成建议
+
+给 Cursor 的直接开发 Prompt
+下面这段可以直接复制给 Cursor，作为第一轮开发提示。建议先让 Cursor 生成 SwiftUI 前端骨架和本地模拟数据，不要第一轮就接真实 Gemini 和 HealthKit。
+你现在是资深 iOS SwiftUI 架构师和产品工程师。我要开发一个 App，名字暂定为 AI Fitness Coach。它是一款基于 Apple Watch + Gemini AI 的智能健身决策 App，核心功能包括：1. Apple Watch / HealthKit 数据同步；2. 肌肉恢复热力图；3. 今日训练推荐；4. 拍照识别食物并计算卡路里和三大营养素；5. AI Coach 根据训练、饮食和恢复数据给出建议；6. Free / Pro 订阅模式。请先帮我生成一个可运行的 SwiftUI MVP 项目骨架，要求：- 使用 SwiftUI + MVVM；- 底部 Tab 包含 Home、Recovery、Workout、Nutrition、Coach、Profile；- 先使用 mock data，不要接真实 API；- Home 页面显示 Today Readiness Score、肌肉恢复热力图占位、今日训练建议、饮食进度卡片；- Recovery 页面显示正面/背面肌肉恢复状态列表，绿色/黄色/红色；- Workout 页面支持添加训练动作 mock 表单；- Nutrition 页面支持 Scan Meal 按钮和食物识别结果 mock 卡片；- Coach 页面展示结构化建议卡片，不要只做聊天框；- Profile 页面展示 HealthKit 授权入口、目标设置、订阅状态；- 请给出完整代码文件结构和每个文件的代码。注意：- Gemini API Key 不允许写在 App 前端；未来必须通过后端调用；- HealthKit 读取需要用户授权；- App 不得声称医学诊断，只能说恢复估算；- UI 风格要现代、干净、健身科技感，适合深色模式。
+官方参考文档
+以下文档用于开发时查阅，Cursor 或开发者可以基于这些官方文档实现真实接口。
+Apple HealthKit: https://developer.apple.com/documentation/healthkit
+Apple HKWorkout: https://developer.apple.com/documentation/healthkit/hkworkout
+Apple HKWorkoutSession: https://developer.apple.com/documentation/healthkit/hkworkoutsession
+Gemini API Image Understanding: https://ai.google.dev/gemini-api/docs/image-understanding
+Gemini API Structured Output: https://ai.google.dev/gemini-api/docs/structured-output
+Gemini API Function Calling: https://ai.google.dev/gemini-api/docs/function-calling
+USDA FoodData Central API: https://fdc.nal.usda.gov/api-guide

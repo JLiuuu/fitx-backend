@@ -1,0 +1,108 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project fitnesscoach.xcodeproj -scheme "FitX iOS" -destination generic/platform=iOS build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+    CODE_SIGNING_REQUIRED = NO
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (1 target)
+    Target 'FitX iOS' in project 'fitnesscoach' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --print-asset-tag-combinations --output-format xml1 /Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 3e439586fd4483a9794b5904583353db
+Build description path: /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/XCBuildData/3e439586fd4483a9794b5904583353db.xcbuilddata
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk /Users/jeremyliu/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache
+    cd /Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -o /Users/jeremyliu/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache
+
+WriteAuxiliaryFile /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.SwiftFileList (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    write-file /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.SwiftFileList
+
+WriteAuxiliaryFile /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.LinkFileList (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    write-file /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.LinkFileList
+
+WriteAuxiliaryFile /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.SwiftConstValuesFileList (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    write-file /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.SwiftConstValuesFileList
+
+CompileAssetCatalogVariant thinned /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX\ iOS.app /Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets --compile /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --compress-pngs --enable-on-demand-resources YES --development-region en --target-device iphone --target-device ipad --minimum-deployment-target 18.5 --platform iphoneos
+/* com.apple.actool.errors */
+/Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets: error: The stickers icon set or app icon set named "AppIcon" did not have any applicable content.
+/* com.apple.actool.document.warnings */
+/Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets:./AppCover.imageset/(null)[2d][cover_raw.png]: warning: The image set "AppCover" has an unassigned child.
+/Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets:./AppCover.imageset/(null)[2d][cover_raw.png]: warning: The image set "AppCover" has an unassigned child.
+/Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets:./AppIcon.appiconset/(null)[2d][icon_1024x1024.png]: warning: The app icon set "AppIcon" has an unassigned child.
+/* com.apple.actool.compilation-results */
+/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX iOS.build/assetcatalog_generated_info.plist_thinned
+/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX iOS.build/assetcatalog_output/thinned/Assets.car
+
+
+SwiftDriver FitX\ iOS normal arm64 com.apple.xcode.tools.swift.compiler (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name FitX_iOS -Onone -enforce-exclusivity\=checked @/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios18.5 -g -module-cache-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Index.noindex/DataStore -swift-version 5 -I /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos -F /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos -emit-localized-strings -emit-localized-strings-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/jeremyliu/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache -output-file-map /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/jeremyliu/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS_const_extract_protocols.json -Xcc -iquote -Xcc /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-generated-files.hmap -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-own-target-headers.hmap -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-all-target-headers.hmap -Xcc -iquote -Xcc /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-project-headers.hmap -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/include -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/DerivedSources-normal/arm64 -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/DerivedSources/arm64 -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS-Swift.h -working-directory /Users/jeremyliu/Desktop/fitnesscoach -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ Views.swift /Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Views.swift (in target 'FitX iOS' from project 'fitnesscoach')
+SwiftCompile normal arm64 /Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Views.swift (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ FitX_iOS (in target 'FitX iOS' from project 'fitnesscoach')
+
+EmitSwiftModule normal arm64 (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for FitX_iOS (in target 'FitX iOS' from project 'fitnesscoach')
+
+SwiftDriver\ Compilation\ Requirements FitX\ iOS normal arm64 com.apple.xcode.tools.swift.compiler (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name FitX_iOS -Onone -enforce-exclusivity\=checked @/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS.SwiftFileList -DDEBUG -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios18.5 -g -module-cache-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Index.noindex/DataStore -swift-version 5 -I /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos -F /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos -emit-localized-strings -emit-localized-strings-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64 -c -j8 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/jeremyliu/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/iphoneos18.5-22F76-7fa4eea80a99bbfdc046826b63ec4baf.sdkstatcache -output-file-map /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/jeremyliu/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX\ iOS_const_extract_protocols.json -Xcc -iquote -Xcc /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-generated-files.hmap -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-own-target-headers.hmap -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-all-target-headers.hmap -Xcc -iquote -Xcc /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/FitX\ iOS-project-headers.hmap -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/include -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/DerivedSources-normal/arm64 -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/DerivedSources/arm64 -Xcc -I/Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS-Swift.h -working-directory /Users/jeremyliu/Desktop/fitnesscoach -experimental-emit-module-separately -disable-cmo
+
+Copy /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX_iOS.swiftmodule/arm64-apple-ios.abi.json /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.abi.json (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.abi.json /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX_iOS.swiftmodule/arm64-apple-ios.abi.json
+
+Copy /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX_iOS.swiftmodule/arm64-apple-ios.swiftmodule /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.swiftmodule (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.swiftmodule /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX_iOS.swiftmodule/arm64-apple-ios.swiftmodule
+
+Copy /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX_iOS.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.swiftsourceinfo (in target 'FitX iOS' from project 'fitnesscoach')
+    cd /Users/jeremyliu/Desktop/fitnesscoach
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Intermediates.noindex/fitnesscoach.build/Debug-iphoneos/FitX\ iOS.build/Objects-normal/arm64/FitX_iOS.swiftsourceinfo /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX_iOS.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo
+
+** BUILD FAILED **
+
+
+The following build commands failed:
+	CompileAssetCatalogVariant thinned /Users/jeremyliu/Library/Developer/Xcode/DerivedData/fitnesscoach-eeiagcbqsanxkpfulrauizianpyq/Build/Products/Debug-iphoneos/FitX\ iOS.app /Users/jeremyliu/Desktop/fitnesscoach/fitnesscoach/Assets.xcassets (in target 'FitX iOS' from project 'fitnesscoach')
+	Building project fitnesscoach with scheme FitX iOS
+(2 failures)

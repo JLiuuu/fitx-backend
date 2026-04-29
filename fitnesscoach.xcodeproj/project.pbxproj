@@ -21,28 +21,63 @@
 			remoteGlobalIDString = A9217B6F2F9F95CF00B1B1D5;
 			remoteInfo = fitnesscoach;
 		};
+		A934141B2FA24AA40056F962 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A9217B682F9F95CF00B1B1D5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A934140D2FA24AA20056F962;
+			remoteInfo = "FitX iOS";
+		};
+		A93414252FA24AA40056F962 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A9217B682F9F95CF00B1B1D5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A934140D2FA24AA20056F962;
+			remoteInfo = "FitX iOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A9217B702F9F95CF00B1B1D5 /* fitnesscoach.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fitnesscoach.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A9217B702F9F95CF00B1B1D5 /* fitnesscoach.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = fitnesscoach.app; path = FitX.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9217B7E2F9F95D200B1B1D5 /* fitnesscoachTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = fitnesscoachTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9217B882F9F95D200B1B1D5 /* fitnesscoachUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = fitnesscoachUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A934140E2FA24AA20056F962 /* FitX iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "FitX iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A934141A2FA24AA40056F962 /* FitX iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "FitX iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A93414242FA24AA40056F962 /* FitX iOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "FitX iOSUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A9217B722F9F95CF00B1B1D5 /* fitnesscoach */ = {
+		A9217B722F9F95CF00B1B1D5 /* FitX */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			name = FitX;
 			path = fitnesscoach;
 			sourceTree = "<group>";
 		};
-		A9217B812F9F95D200B1B1D5 /* fitnesscoachTests */ = {
+		A9217B812F9F95D200B1B1D5 /* FitXTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			name = FitXTests;
 			path = fitnesscoachTests;
 			sourceTree = "<group>";
 		};
-		A9217B8B2F9F95D200B1B1D5 /* fitnesscoachUITests */ = {
+		A9217B8B2F9F95D200B1B1D5 /* FitXUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			name = FitXUITests;
 			path = fitnesscoachUITests;
+			sourceTree = "<group>";
+		};
+		A934140F2FA24AA20056F962 /* FitX iOS */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "FitX iOS";
+			sourceTree = "<group>";
+		};
+		A934141D2FA24AA40056F962 /* FitX iOSTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "FitX iOSTests";
+			sourceTree = "<group>";
+		};
+		A93414272FA24AA40056F962 /* FitX iOSUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "FitX iOSUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,15 +104,39 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A934140B2FA24AA20056F962 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A93414172FA24AA40056F962 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A93414212FA24AA40056F962 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		A9217B672F9F95CF00B1B1D5 = {
 			isa = PBXGroup;
 			children = (
-				A9217B722F9F95CF00B1B1D5 /* fitnesscoach */,
-				A9217B812F9F95D200B1B1D5 /* fitnesscoachTests */,
-				A9217B8B2F9F95D200B1B1D5 /* fitnesscoachUITests */,
+				A9217B722F9F95CF00B1B1D5 /* FitX */,
+				A9217B812F9F95D200B1B1D5 /* FitXTests */,
+				A9217B8B2F9F95D200B1B1D5 /* FitXUITests */,
+				A934140F2FA24AA20056F962 /* FitX iOS */,
+				A934141D2FA24AA40056F962 /* FitX iOSTests */,
+				A93414272FA24AA40056F962 /* FitX iOSUITests */,
 				A9217B712F9F95CF00B1B1D5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +147,9 @@
 				A9217B702F9F95CF00B1B1D5 /* fitnesscoach.app */,
 				A9217B7E2F9F95D200B1B1D5 /* fitnesscoachTests.xctest */,
 				A9217B882F9F95D200B1B1D5 /* fitnesscoachUITests.xctest */,
+				A934140E2FA24AA20056F962 /* FitX iOS.app */,
+				A934141A2FA24AA40056F962 /* FitX iOSTests.xctest */,
+				A93414242FA24AA40056F962 /* FitX iOSUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,7 +170,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A9217B722F9F95CF00B1B1D5 /* fitnesscoach */,
+				A9217B722F9F95CF00B1B1D5 /* FitX */,
 			);
 			name = fitnesscoach;
 			packageProductDependencies = (
@@ -131,7 +193,7 @@
 				A9217B802F9F95D200B1B1D5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				A9217B812F9F95D200B1B1D5 /* fitnesscoachTests */,
+				A9217B812F9F95D200B1B1D5 /* FitXTests */,
 			);
 			name = fitnesscoachTests;
 			packageProductDependencies = (
@@ -154,13 +216,81 @@
 				A9217B8A2F9F95D200B1B1D5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				A9217B8B2F9F95D200B1B1D5 /* fitnesscoachUITests */,
+				A9217B8B2F9F95D200B1B1D5 /* FitXUITests */,
 			);
 			name = fitnesscoachUITests;
 			packageProductDependencies = (
 			);
 			productName = fitnesscoachUITests;
 			productReference = A9217B882F9F95D200B1B1D5 /* fitnesscoachUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A934140D2FA24AA20056F962 /* FitX iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A93414322FA24AA40056F962 /* Build configuration list for PBXNativeTarget "FitX iOS" */;
+			buildPhases = (
+				A934140A2FA24AA20056F962 /* Sources */,
+				A934140B2FA24AA20056F962 /* Frameworks */,
+				A934140C2FA24AA20056F962 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A9217B722F9F95CF00B1B1D5 /* FitX */,
+			);
+			name = "FitX iOS";
+			packageProductDependencies = (
+			);
+			productName = "FitX iOS";
+			productReference = A934140E2FA24AA20056F962 /* FitX iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A93414192FA24AA40056F962 /* FitX iOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A93414332FA24AA40056F962 /* Build configuration list for PBXNativeTarget "FitX iOSTests" */;
+			buildPhases = (
+				A93414162FA24AA40056F962 /* Sources */,
+				A93414172FA24AA40056F962 /* Frameworks */,
+				A93414182FA24AA40056F962 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A934141C2FA24AA40056F962 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A934141D2FA24AA40056F962 /* FitX iOSTests */,
+			);
+			name = "FitX iOSTests";
+			packageProductDependencies = (
+			);
+			productName = "FitX iOSTests";
+			productReference = A934141A2FA24AA40056F962 /* FitX iOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A93414232FA24AA40056F962 /* FitX iOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A93414342FA24AA40056F962 /* Build configuration list for PBXNativeTarget "FitX iOSUITests" */;
+			buildPhases = (
+				A93414202FA24AA40056F962 /* Sources */,
+				A93414212FA24AA40056F962 /* Frameworks */,
+				A93414222FA24AA40056F962 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A93414262FA24AA40056F962 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A93414272FA24AA40056F962 /* FitX iOSUITests */,
+			);
+			name = "FitX iOSUITests";
+			packageProductDependencies = (
+			);
+			productName = "FitX iOSUITests";
+			productReference = A93414242FA24AA40056F962 /* FitX iOSUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -184,6 +314,17 @@
 						CreatedOnToolsVersion = 16.4;
 						TestTargetID = A9217B6F2F9F95CF00B1B1D5;
 					};
+					A934140D2FA24AA20056F962 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					A93414192FA24AA40056F962 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = A934140D2FA24AA20056F962;
+					};
+					A93414232FA24AA40056F962 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = A934140D2FA24AA20056F962;
+					};
 				};
 			};
 			buildConfigurationList = A9217B6B2F9F95CF00B1B1D5 /* Build configuration list for PBXProject "fitnesscoach" */;
@@ -203,6 +344,9 @@
 				A9217B6F2F9F95CF00B1B1D5 /* fitnesscoach */,
 				A9217B7D2F9F95D200B1B1D5 /* fitnesscoachTests */,
 				A9217B872F9F95D200B1B1D5 /* fitnesscoachUITests */,
+				A934140D2FA24AA20056F962 /* FitX iOS */,
+				A93414192FA24AA40056F962 /* FitX iOSTests */,
+				A93414232FA24AA40056F962 /* FitX iOSUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +367,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A9217B862F9F95D200B1B1D5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A934140C2FA24AA20056F962 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A93414182FA24AA40056F962 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A93414222FA24AA40056F962 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,6 +418,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A934140A2FA24AA20056F962 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A93414162FA24AA40056F962 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A93414202FA24AA40056F962 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -265,6 +451,16 @@
 			isa = PBXTargetDependency;
 			target = A9217B6F2F9F95CF00B1B1D5 /* fitnesscoach */;
 			targetProxy = A9217B892F9F95D200B1B1D5 /* PBXContainerItemProxy */;
+		};
+		A934141C2FA24AA40056F962 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A934140D2FA24AA20056F962 /* FitX iOS */;
+			targetProxy = A934141B2FA24AA40056F962 /* PBXContainerItemProxy */;
+		};
+		A93414262FA24AA40056F962 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A934140D2FA24AA20056F962 /* FitX iOS */;
+			targetProxy = A93414252FA24AA40056F962 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -396,16 +592,25 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3Y8RBLGJX4;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_RESOURCE_FILE_NAMES = Info.plist;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FitX;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is required to scan meals and estimate nutrition.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Fitness data is used to estimate recovery, readiness, and daily training suggestions.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Health data is used to estimate recovery, readiness, and daily training suggestions.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access is required for voice workout input.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access is required to select meal photos for nutrition analysis.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Speech recognition is used to convert workout voice input into text.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = a.fitnesscoach;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitx;
+				PRODUCT_NAME = FitX;
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -421,16 +626,25 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3Y8RBLGJX4;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_RESOURCE_FILE_NAMES = Info.plist;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FitX;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access is required to scan meals and estimate nutrition.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Fitness data is used to estimate recovery, readiness, and daily training suggestions.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Health data is used to estimate recovery, readiness, and daily training suggestions.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access is required for voice workout input.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo library access is required to select meal photos for nutrition analysis.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Speech recognition is used to convert workout voice input into text.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = a.fitnesscoach;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitx;
+				PRODUCT_NAME = FitX;
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -446,7 +660,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.3;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = a.fitnesscoachTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -463,7 +677,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.3;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = a.fitnesscoachTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitxTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -478,7 +692,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = a.fitnesscoachUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitxUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -493,11 +707,164 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = a.fitnesscoachUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitxUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TEST_TARGET_NAME = fitnesscoach;
+			};
+			name = Release;
+		};
+		A934142C2FA24AA40056F962 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "FitX iOS/FitX iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3Y8RBLGJX4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FitX;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow FitX to take meal photos for nutrition analysis.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Allow FitX to read your Apple Health data for recovery and training insights.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Allow FitX to write selected workout and wellness data to Apple Health.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow FitX to capture voice input for assistant commands.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow FitX to access your photo library for meal logging.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow FitX to transcribe your voice input for assistant commands.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitx.dev;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A934142D2FA24AA40056F962 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "FitX iOS/FitX iOS.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3Y8RBLGJX4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FitX;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Allow FitX to take meal photos for nutrition analysis.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Allow FitX to read your Apple Health data for recovery and training insights.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Allow FitX to write selected workout and wellness data to Apple Health.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Allow FitX to capture voice input for assistant commands.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Allow FitX to access your photo library for meal logging.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow FitX to transcribe your voice input for assistant commands.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jeremyliu.fitx.dev;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A934142E2FA24AA40056F962 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "a.FitX-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FitX iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FitX iOS";
+			};
+			name = Debug;
+		};
+		A934142F2FA24AA40056F962 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "a.FitX-iOSTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FitX iOS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FitX iOS";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A93414302FA24AA40056F962 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "a.FitX-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "FitX iOS";
+			};
+			name = Debug;
+		};
+		A93414312FA24AA40056F962 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "a.FitX-iOSUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "FitX iOS";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -536,6 +903,33 @@
 			buildConfigurations = (
 				A9217B992F9F95D200B1B1D5 /* Debug */,
 				A9217B9A2F9F95D200B1B1D5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A93414322FA24AA40056F962 /* Build configuration list for PBXNativeTarget "FitX iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A934142C2FA24AA40056F962 /* Debug */,
+				A934142D2FA24AA40056F962 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A93414332FA24AA40056F962 /* Build configuration list for PBXNativeTarget "FitX iOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A934142E2FA24AA40056F962 /* Debug */,
+				A934142F2FA24AA40056F962 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A93414342FA24AA40056F962 /* Build configuration list for PBXNativeTarget "FitX iOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A93414302FA24AA40056F962 /* Debug */,
+				A93414312FA24AA40056F962 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
