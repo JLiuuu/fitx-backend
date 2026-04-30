@@ -786,6 +786,157 @@ final class AIAssistantViewModel: ObservableObject {
         chatMessages.append(ChatMessage(id: UUID(), role: role, text: text, imageData: imageData))
     }
 
+    func trainingFocusSummaryMessage() -> String {
+        let readiness = appState.dashboard.readinessScore
+        let grouped = appState.recoveryItems.map { item in
+            (name: normalizedMuscleGroupName(item.muscleName), recovery: max(0, min(100, 100 - item.fatigueScore)))
+        }
+        let best = grouped.sorted { $0.recovery > $1.recovery }.prefix(6).map { "\($0.name) \($0.recovery)%" }
+        let avoid = grouped.sorted { $0.recovery < $1.recovery }.prefix(3).map { "\($0.name) \($0.recovery)%" }
+        return """
+        Based on your recovery today:
+        - Overall readiness: \(readiness)%
+        - Good to train: \(best.joined(separator: ", "))
+        - Better to avoid heavy load: \(avoid.joined(separator: ", "))
+        Which area do you want to train today? (chest / back / legs / shoulders / biceps / triceps / abs)
+        """
+    }
+
+    func detectTrainingTarget(from text: String) -> String? {
+        let lower = text.lowercased()
+        if lower.contains("back") || lower.contains("upper back") || lower.contains("lower back") || lower.contains("lats") {
+            return "Back"
+        }
+        if lower.contains("leg") || lower.contains("quad") || lower.contains("hamstring") || lower.contains("glute") || lower.contains("calf") {
+            return "Legs"
+        }
+        if lower.contains("chest") || lower.contains("pec") {
+            return "Chest"
+        }
+        if lower.contains("shoulder") || lower.contains("delts") {
+            return "Shoulders"
+        }
+        if lower.contains("biceps") || lower.contains("bicep") || lower.contains("bi ") {
+            return "Biceps"
+        }
+        if lower.contains("triceps") || lower.contains("tricep") || lower.contains("tri ") {
+            return "Triceps"
+        }
+        if lower.contains("abs") || lower.contains("core") || lower.contains("oblique") {
+            return "Abs"
+        }
+        return nil
+    }
+
+    func generateGymPlanText(for target: String) async -> String {
+        let prompt = """
+        Create a concise gym workout plan for \(target).
+        Requirements:
+        - 4-5 exercises
+        - each exercise around 4 sets
+        - each set 6-10 reps
+        - use dumbbell/barbell/machine movements
+        - for Back plan, cover upper back + lower back + rear neck/trap in one integrated session
+        - for Legs plan, use compound multi-joint movements in one integrated session
+        Output in clear bullet points.
+        """
+
+        if appState.useLiveBackend, let remote = try? await appState.requestChatAssistant(input: prompt) {
+            return remote
+        }
+
+        let drafts = defaultPlanDrafts(for: target)
+        let lines = drafts.map { "- \($0.exercise): \($0.sets) sets x \($0.reps) reps" }
+        return """
+        \(target) plan:
+        \(lines.joined(separator: "\n"))
+        """
+    }
+
+    func defaultPlanDrafts(for target: String) -> [WorkoutDraft] {
+        switch target {
+        case "Back":
+            return [
+                ("Barbell Deadlift", 4, 6, 0, 8),
+                ("Chest-Supported Row Machine", 4, 8, 0, 8),
+                ("Wide-Grip Lat Pulldown", 4, 8, 0, 8),
+                ("Back Extension", 4, 10, 0, 7),
+                ("Dumbbell Shrug", 4, 10, 0, 7)
+            ]
+        case "Legs":
+            return [
+                ("Back Squat", 4, 6, 0, 8),
+                ("Romanian Deadlift", 4, 8, 0, 8),
+                ("Leg Press", 4, 10, 0, 8),
+                ("Walking Lunge", 4, 8, 0, 7),
+                ("Seated Leg Curl", 4, 10, 0, 7)
+            ]
+        case "Chest":
+            return [
+                ("Barbell Bench Press", 4, 6, 0, 8),
+                ("Incline Dumbbell Press", 4, 8, 0, 8),
+                ("Machine Chest Press", 4, 8, 0, 7),
+                ("Cable Fly", 4, 10, 0, 7)
+            ]
+        case "Shoulders":
+            return [
+                ("Barbell Overhead Press", 4, 6, 0, 8),
+                ("Dumbbell Lateral Raise", 4, 10, 0, 7),
+                ("Rear Delt Machine Fly", 4, 10, 0, 7),
+                ("Seated Dumbbell Press", 4, 8, 0, 8)
+            ]
+        case "Biceps":
+            return [
+                ("Barbell Curl", 4, 8, 0, 8),
+                ("Incline Dumbbell Curl", 4, 8, 0, 8),
+                ("Cable Curl", 4, 10, 0, 7),
+                ("Hammer Curl", 4, 10, 0, 7)
+            ]
+        case "Triceps":
+            return [
+                ("Close-Grip Bench Press", 4, 6, 0, 8),
+                ("Cable Rope Pushdown", 4, 10, 0, 7),
+                ("Overhead Cable Extension", 4, 10, 0, 7),
+                ("Skull Crusher", 4, 8, 0, 8)
+            ]
+        default:
+            return [
+                ("Cable Crunch", 4, 10, 0, 7),
+                ("Hanging Knee Raise", 4, 10, 0, 7),
+                ("Ab Wheel Rollout", 4, 8, 0, 8),
+                ("Pallof Press", 4, 10, 0, 7)
+            ]
+        }
+    }
+
+    func addWorkoutPlanDrafts(_ drafts: [WorkoutDraft]) {
+        for draft in drafts {
+            confirmWorkout(draft)
+        }
+    }
+
+    func isAffirmative(_ text: String) -> Bool {
+        let lower = text.lowercased()
+        return ["ok", "yes", "yep", "sure", "sounds good", "good", "great"].contains { lower.contains($0) }
+    }
+
+    func wantsAlternatives(_ text: String) -> Bool {
+        let lower = text.lowercased()
+        return ["other", "another", "alternative", "else", "different"].contains { lower.contains($0) }
+    }
+
+    private func normalizedMuscleGroupName(_ raw: String) -> String {
+        let lower = raw.lowercased()
+        if lower.contains("shoulder") { return "Shoulders" }
+        if lower.contains("upper back") || lower.contains("lats") || lower.contains("back") { return "Back" }
+        if lower.contains("quad") || lower.contains("ham") || lower.contains("glute") || lower.contains("calf") || lower.contains("leg") { return "Legs" }
+        if lower.contains("biceps") { return "Biceps" }
+        if lower.contains("triceps") { return "Triceps" }
+        if lower.contains("abs") || lower.contains("oblique") || lower.contains("core") { return "Abs" }
+        if lower.contains("chest") { return "Chest" }
+        return raw
+    }
+
     func requestVoiceAccess() async {
         await appState.requestVoiceInputAccess()
     }

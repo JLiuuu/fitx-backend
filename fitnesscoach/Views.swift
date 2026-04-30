@@ -12,6 +12,12 @@ import PhotosUI
 import Charts
 #endif
 
+private struct AIChatMessage: Identifiable {
+    let id = UUID()
+    let role: String
+    let text: String
+}
+
 struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @ObservedObject var assistantViewModel: AIAssistantViewModel
@@ -219,6 +225,23 @@ private struct UnifiedAIAssistantSheet: View {
         }
     }
 
+    private struct BinaryPrompt {
+        enum Kind {
+            case generatePlan(target: String)
+            case addPlanToTraining(drafts: [AIAssistantViewModel.WorkoutDraft])
+        }
+        let prompt: String
+        let yesTitle: String
+        let noTitle: String
+        let kind: Kind
+    }
+
+    private enum TrainingFlowState {
+        case idle
+        case awaitingTargetSelection
+        case planReady(target: String, drafts: [AIAssistantViewModel.WorkoutDraft])
+    }
+
     @ObservedObject var viewModel: AIAssistantViewModel
     let initialAutoPrompt: String?
     @Environment(\.dismiss) private var dismiss
@@ -230,6 +253,8 @@ private struct UnifiedAIAssistantSheet: View {
     @State private var cameraMessage = ""
     @State private var showCameraCaptureSheet = false
     @State private var pendingAssistantAction: PendingAssistantAction?
+    @State private var pendingBinaryPrompt: BinaryPrompt?
+    @State private var trainingFlowState: TrainingFlowState = .idle
     @State private var scrollAnchor = UUID()
     @State private var didAutoPrompt = false
     @State private var selectedPreviewImageData: Data?
@@ -317,11 +342,60 @@ private struct UnifiedAIAssistantSheet: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
 
+                if let pendingBinaryPrompt {
+                    HStack(spacing: 8) {
+                        Text(pendingBinaryPrompt.prompt)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .lineLimit(2)
+                        Spacer(minLength: 8)
+                        Button(pendingBinaryPrompt.noTitle) {
+                            self.pendingBinaryPrompt = nil
+                            trainingFlowState = .idle
+                        }
+                        .font(.caption.weight(.semibold))
+                        .buttonStyle(.plain)
+                        .foregroundStyle(AppTheme.textSecondary)
+                        Button(pendingBinaryPrompt.yesTitle) {
+                            let prompt = pendingBinaryPrompt
+                            self.pendingBinaryPrompt = nil
+                            guard let prompt else { return }
+                            Task { @MainActor in
+                                switch prompt.kind {
+                                case .generatePlan(let target):
+                                    isSending = true
+                                    let reply = await viewModel.generateGymPlanText(for: target)
+                                    viewModel.appendChatMessage(role: "assistant", text: reply)
+                                    let drafts = viewModel.defaultPlanDrafts(for: target)
+                                    trainingFlowState = .planReady(target: target, drafts: drafts)
+                                    viewModel.appendChatMessage(role: "assistant", text: "How does this plan look? If you are OK with it, I can add it to today's Training.")
+                                    isSending = false
+                                case .addPlanToTraining(let drafts):
+                                    viewModel.addWorkoutPlanDrafts(drafts)
+                                    viewModel.appendChatMessage(role: "assistant", text: "Done. Added this plan to today's Training.")
+                                    trainingFlowState = .idle
+                                }
+                            }
+                        }
+                        .font(.caption.weight(.bold))
+                        .buttonStyle(.plain)
+                        .foregroundStyle(AppTheme.accent)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.white.opacity(0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         Button {
                             cameraMessage = ""
-                            composerText = viewModel.trainingTodayPrompt
+                            composerText = "What should I train today?"
                             sendMessage()
                         } label: {
                             Text("🧠 What should I train today?")
@@ -536,6 +610,53 @@ private struct UnifiedAIAssistantSheet: View {
         selectedImageData = nil
         selectedPhotoItem = nil
         Task { @MainActor in
+            if image == nil {
+                let lower = text.lowercased()
+                if lower.contains("what should i train today") {
+                    trainingFlowState = .awaitingTargetSelection
+                    viewModel.appendChatMessage(role: "assistant", text: viewModel.trainingFocusSummaryMessage())
+                    isSending = false
+                    return
+                }
+
+                switch trainingFlowState {
+                case .awaitingTargetSelection:
+                    if let target = viewModel.detectTrainingTarget(from: text) {
+                        pendingBinaryPrompt = BinaryPrompt(
+                            prompt: "You chose \(target). Generate a detailed gym plan now?",
+                            yesTitle: "Yes ✅",
+                            noTitle: "No ❌",
+                            kind: .generatePlan(target: target)
+                        )
+                        viewModel.appendChatMessage(role: "assistant", text: "Great choice: \(target). Do you want a detailed plan now?")
+                    } else if !text.isEmpty {
+                        viewModel.appendChatMessage(role: "assistant", text: "Please choose one area: chest, back, legs, shoulders, biceps, triceps, or abs.")
+                    }
+                    isSending = false
+                    return
+                case .planReady(let target, let drafts):
+                    if viewModel.isAffirmative(text) {
+                        pendingBinaryPrompt = BinaryPrompt(
+                            prompt: "Add this \(target) plan to today's Training data?",
+                            yesTitle: "Yes ✅",
+                            noTitle: "No ❌",
+                            kind: .addPlanToTraining(drafts: drafts)
+                        )
+                        viewModel.appendChatMessage(role: "assistant", text: "Would you like me to add this plan to today's Training?")
+                        isSending = false
+                        return
+                    }
+                    if viewModel.wantsAlternatives(text) {
+                        let alt = await viewModel.generateGymPlanText(for: target)
+                        viewModel.appendChatMessage(role: "assistant", text: "Sure — here is an alternative plan:\n\(alt)")
+                        isSending = false
+                        return
+                    }
+                case .idle:
+                    break
+                }
+            }
+
             let result = await viewModel.send(text: text, imageData: image)
             pendingAssistantAction = nil
             if let pending = result.pendingMeal {
