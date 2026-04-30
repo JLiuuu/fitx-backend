@@ -791,7 +791,7 @@ final class AIAssistantViewModel: ObservableObject {
                 }
 
                 if looksLikeMealLog {
-                    let remote = try await appState.requestMealAssistant(input: text)
+                    let remote = try await appState.requestMealAssistant(input: text, imageData: imageData)
                     if let parsed = remote.parsed,
                        let calories = Int(parsed.calories), calories > 0 {
                         let draft: MealDraft = (

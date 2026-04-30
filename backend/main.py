@@ -17,6 +17,7 @@ load_dotenv()
 class AssistantRequestPayload(BaseModel):
     userId: str
     message: str
+    imageBase64: str | None = None
 
 
 class WorkoutAssistantAPIResponse(BaseModel):
@@ -42,7 +43,7 @@ class ChatAssistantAPIResponse(BaseModel):
 
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
 BACKEND_API_KEY = os.getenv("BACKEND_API_KEY", "").strip()
 ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "*").split(",")]
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
@@ -89,13 +90,24 @@ def _extract_first_json_object(text: str) -> dict[str, Any]:
     return json.loads(match.group(0))
 
 
-async def _call_gemini(prompt: str) -> str:
+async def _call_gemini(prompt: str, image_base64: str | None = None) -> str:
     if not GEMINI_API_KEY:
         raise HTTPException(status_code=500, detail="Server GEMINI_API_KEY is not configured")
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    parts: list[dict[str, Any]] = [{"text": prompt}]
+    if image_base64:
+        parts.append(
+            {
+                "inline_data": {
+                    "mime_type": "image/jpeg",
+                    "data": image_base64,
+                }
+            }
+        )
+
     body = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [{"parts": parts}],
         "generationConfig": {"temperature": 0.2, "topP": 0.9},
     }
     async with httpx.AsyncClient(timeout=30.0) as client:
@@ -144,7 +156,8 @@ JSON schema:
 }}
 Rules:
 - reply must be concise English.
-- If this is not a meal logging message, set nutrition fields to null.
+- If an image is attached, infer nutrition from the image first.
+- If this is not a meal logging message and no image is attached, set nutrition fields to null.
 - If values are unknown, use null.
 User message:
 {message}
@@ -193,7 +206,8 @@ async def assistant_meal(
 ) -> MealAssistantAPIResponse:
     _require_auth_if_enabled(x_api_key)
     _enforce_rate_limit(request.client.host if request.client else payload.userId)
-    raw = await _call_gemini(_meal_prompt(payload.message))
+    meal_message = payload.message if payload.message.strip() else "Please analyze this meal image and estimate calories/macros."
+    raw = await _call_gemini(_meal_prompt(meal_message), image_base64=payload.imageBase64)
     parsed = _extract_first_json_object(raw)
     return MealAssistantAPIResponse(
         reply=str(parsed.get("reply", "Logged.")),

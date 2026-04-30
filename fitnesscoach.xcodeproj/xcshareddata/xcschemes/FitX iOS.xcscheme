@@ -82,7 +82,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "FITNESS_BACKEND_URL"
-            value = "http://192.168.0.93:8000"
+            value = "https://fitx-ai-backend.onrender.com"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

@@ -782,8 +782,8 @@ final class AppState: ObservableObject {
         return (decoded.reply, parsed)
     }
 
-    func requestMealAssistant(input: String) async throws -> (reply: String, parsed: (name: String, calories: String, protein: String, carbs: String, fat: String)?) {
-        let decoded = try await apiClient.parseMealAssistant(userID: userID, message: input)
+    func requestMealAssistant(input: String, imageData: Data? = nil) async throws -> (reply: String, parsed: (name: String, calories: String, protein: String, carbs: String, fat: String)?) {
+        let decoded = try await apiClient.parseMealAssistant(userID: userID, message: input, imageData: imageData)
         backendStatusMessage = "Live backend meal assistant succeeded."
         let parsed: (name: String, calories: String, protein: String, carbs: String, fat: String)?
         if let name = decoded.name, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

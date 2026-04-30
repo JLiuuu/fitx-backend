@@ -126,13 +126,19 @@ final class APIClient {
         return try JSONDecoder().decode(WorkoutAssistantAPIResponse.self, from: data)
     }
 
-    func parseMealAssistant(userID: String, message: String) async throws -> MealAssistantAPIResponse {
+    func parseMealAssistant(userID: String, message: String, imageData: Data? = nil) async throws -> MealAssistantAPIResponse {
         guard let baseURL else { throw APIError.invalidURL }
         let url = baseURL.appending(path: "/api/assistant/meal")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(AssistantRequestPayload(userId: userID, message: message))
+        request.httpBody = try JSONEncoder().encode(
+            AssistantRequestPayload(
+                userId: userID,
+                message: message,
+                imageBase64: imageData?.base64EncodedString()
+            )
+        )
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
             throw APIError.invalidResponse
@@ -167,6 +173,7 @@ private struct CoachRequestPayload: Codable {
 private struct AssistantRequestPayload: Codable {
     let userId: String
     let message: String
+    let imageBase64: String? = nil
 }
 
 private struct MealScanAPIResponse: Codable {

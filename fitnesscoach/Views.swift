@@ -570,6 +570,12 @@ private struct UnifiedAIAssistantSheet: View {
             let result = await viewModel.send(text: text, imageData: image)
             if let pending = result.pendingMeal {
                 viewModel.confirmMeal(pending)
+                let reply = result.reply.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !reply.isEmpty {
+                    messages.append(.init(role: "assistant", text: reply))
+                } else {
+                    messages.append(.init(role: "assistant", text: "Meal logged to Nutrition."))
+                }
             } else if let pendingWorkout = result.pendingWorkout {
                 pendingWorkoutDraft = pendingWorkout
                 showWorkoutConfirmDialog = true
