@@ -803,6 +803,12 @@ final class AIAssistantViewModel: ObservableObject {
                         )
                         return (remote.reply, draft, nil)
                     }
+                    // If meal endpoint returned a natural-language reply but no structured macros,
+                    // avoid an extra chat roundtrip (which increases latency) and surface its reply.
+                    let mealReply = remote.reply.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !mealReply.isEmpty {
+                        return (mealReply, nil, nil)
+                    }
                 }
 
                 let chatReply = try await appState.requestChatAssistant(input: text)
@@ -924,11 +930,15 @@ final class AIAssistantViewModel: ObservableObject {
         if hasImage { return true }
         let mealContextWords = ["ate", "had", "meal", "food", "breakfast", "lunch", "dinner", "snack", "log", "add"]
         let nutritionFieldWords = ["calories", "calorie", "kcal", "protein", "carb", "carbs", "fat"]
+        let foodEntityWords = ["chicken", "beef", "pork", "fish", "salad", "rice", "burger", "subway", "in-n-out", "in n out", "roast", "sandwich", "pizza"]
         let questionWords = ["how many", "should i", "what should", "recommend", "suggest"]
         let hasMealContext = mealContextWords.contains { lower.contains($0) }
         let nutritionHits = nutritionFieldWords.filter { lower.contains($0) }.count
+        let mentionsFoodEntity = foodEntityWords.contains { lower.contains($0) }
         let isQuestionOnly = questionWords.contains { lower.contains($0) } && !hasMealContext
+        // Nutrition questions about a specific food should still route to meal parsing.
+        if nutritionHits >= 1 && mentionsFoodEntity { return true }
         if isQuestionOnly { return false }
-        return hasMealContext && nutritionHits >= 1
+        return hasMealContext && (nutritionHits >= 1 || mentionsFoodEntity)
     }
 }

@@ -3,6 +3,7 @@ import os
 import re
 import time
 from collections import defaultdict, deque
+from threading import Lock
 from typing import Any
 
 import httpx
@@ -58,6 +59,8 @@ app.add_middleware(
 )
 
 _rate_limit_map: dict[str, deque[float]] = defaultdict(deque)
+_conversation_history: dict[str, deque[dict[str, str]]] = defaultdict(lambda: deque(maxlen=12))
+_conversation_lock = Lock()
 
 
 def _require_auth_if_enabled(x_api_key: str | None) -> None:
@@ -88,6 +91,25 @@ def _extract_first_json_object(text: str) -> dict[str, Any]:
     if not match:
         raise ValueError("No JSON object found in model output")
     return json.loads(match.group(0))
+
+
+def _push_history(user_id: str, role: str, content: str) -> None:
+    text = content.strip()
+    if not text:
+        return
+    with _conversation_lock:
+        _conversation_history[user_id].append({"role": role, "content": text})
+
+
+def _history_block(user_id: str) -> str:
+    with _conversation_lock:
+        items = list(_conversation_history[user_id])
+    if not items:
+        return "No prior context."
+    lines: list[str] = []
+    for item in items[-8:]:
+        lines.append(f'{item["role"]}: {item["content"]}')
+    return "\n".join(lines)
 
 
 async def _call_gemini(prompt: str, image_base64: str | None = None) -> str:
@@ -157,6 +179,10 @@ JSON schema:
 Rules:
 - reply must be concise English.
 - If an image is attached, infer nutrition from the image first.
+- If an image is attached, you MUST provide estimated integer values for calories, protein, carbs, and fat (do not return null for these fields).
+- Use best-effort estimates even when uncertain.
+- In reply, include food identification first (what the food likely is), then calorie + macros.
+- For nutrition questions ("how many calories", "nutrition facts", "how much protein/carbs/fat"), return all 4 values (calories/protein/carbs/fat) whenever possible.
 - If this is not a meal logging message and no image is attached, set nutrition fields to null.
 - If values are unknown, use null.
 User message:
@@ -168,6 +194,13 @@ def _chat_prompt(message: str) -> str:
     return f"""You are FitX AI coach.
 Respond in concise English only.
 Be practical and fitness-focused.
+Use conversation context to resolve references like "that", "same", "what about 2 pounds", etc.
+If the user asks about a food item or calories/nutrition, ALWAYS return:
+- estimated calories
+- protein (g)
+- carbs (g)
+- fat (g)
+If quantity is provided (e.g., 2 pounds), scale estimates accordingly.
 User message:
 {message}
 """
@@ -188,7 +221,7 @@ async def assistant_workout(
     _enforce_rate_limit(request.client.host if request.client else payload.userId)
     raw = await _call_gemini(_workout_prompt(payload.message))
     parsed = _extract_first_json_object(raw)
-    return WorkoutAssistantAPIResponse(
+    response = WorkoutAssistantAPIResponse(
         reply=str(parsed.get("reply", "Logged.")),
         exercise=parsed.get("exercise"),
         sets=parsed.get("sets"),
@@ -196,6 +229,9 @@ async def assistant_workout(
         weight=parsed.get("weight"),
         rpe=parsed.get("rpe"),
     )
+    _push_history(payload.userId, "user", payload.message)
+    _push_history(payload.userId, "assistant", response.reply)
+    return response
 
 
 @app.post("/api/assistant/meal", response_model=MealAssistantAPIResponse)
@@ -207,9 +243,14 @@ async def assistant_meal(
     _require_auth_if_enabled(x_api_key)
     _enforce_rate_limit(request.client.host if request.client else payload.userId)
     meal_message = payload.message if payload.message.strip() else "Please analyze this meal image and estimate calories/macros."
-    raw = await _call_gemini(_meal_prompt(meal_message), image_base64=payload.imageBase64)
+    prompt = f"""{_meal_prompt(meal_message)}
+
+Recent conversation context:
+{_history_block(payload.userId)}
+"""
+    raw = await _call_gemini(prompt, image_base64=payload.imageBase64)
     parsed = _extract_first_json_object(raw)
-    return MealAssistantAPIResponse(
+    response = MealAssistantAPIResponse(
         reply=str(parsed.get("reply", "Logged.")),
         name=parsed.get("name"),
         calories=parsed.get("calories"),
@@ -217,6 +258,9 @@ async def assistant_meal(
         carbs=parsed.get("carbs"),
         fat=parsed.get("fat"),
     )
+    _push_history(payload.userId, "user", payload.message or "[image meal]")
+    _push_history(payload.userId, "assistant", response.reply)
+    return response
 
 
 @app.post("/api/assistant/chat", response_model=ChatAssistantAPIResponse)
@@ -227,5 +271,13 @@ async def assistant_chat(
 ) -> ChatAssistantAPIResponse:
     _require_auth_if_enabled(x_api_key)
     _enforce_rate_limit(request.client.host if request.client else payload.userId)
-    raw = await _call_gemini(_chat_prompt(payload.message))
-    return ChatAssistantAPIResponse(reply=raw)
+    prompt = f"""{_chat_prompt(payload.message)}
+
+Recent conversation context:
+{_history_block(payload.userId)}
+"""
+    raw = await _call_gemini(prompt)
+    response = ChatAssistantAPIResponse(reply=raw)
+    _push_history(payload.userId, "user", payload.message)
+    _push_history(payload.userId, "assistant", response.reply)
+    return response

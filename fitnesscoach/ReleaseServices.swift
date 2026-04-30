@@ -173,7 +173,13 @@ private struct CoachRequestPayload: Codable {
 private struct AssistantRequestPayload: Codable {
     let userId: String
     let message: String
-    let imageBase64: String? = nil
+    let imageBase64: String?
+
+    init(userId: String, message: String, imageBase64: String? = nil) {
+        self.userId = userId
+        self.message = message
+        self.imageBase64 = imageBase64
+    }
 }
 
 private struct MealScanAPIResponse: Codable {
