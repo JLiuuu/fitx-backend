@@ -55,10 +55,12 @@ final class AppState: ObservableObject {
     private let subscriptionManager = SubscriptionManager()
     private let userID = "demo-user"
     private var lastHealthReadinessScore: Int?
-    private var currentDayKey: String = Self.dayKey(for: Date())
+    private var currentDayKey: String
     private var dayChangedObserver: NSObjectProtocol?
+    private var healthAutoSyncTask: Task<Void, Never>?
 
     init() {
+        currentDayKey = AppState.dayKey(for: Date())
         if let saved = persistence.load() {
             self.isAuthenticated = saved.isAuthenticated ?? false
             self.hasCompletedOnboarding = saved.hasCompletedOnboarding ?? false
@@ -116,6 +118,25 @@ final class AppState: ObservableObject {
         if let dayChangedObserver {
             NotificationCenter.default.removeObserver(dayChangedObserver)
         }
+        healthAutoSyncTask?.cancel()
+    }
+
+    func startAutomaticHealthSync(intervalSeconds: UInt64 = 30) {
+        healthAutoSyncTask?.cancel()
+        healthAutoSyncTask = Task { [weak self] in
+            guard let self else { return }
+            await self.requestHealthAccess()
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: intervalSeconds * 1_000_000_000)
+                if Task.isCancelled { break }
+                await self.requestHealthAccess()
+            }
+        }
+    }
+
+    func stopAutomaticHealthSync() {
+        healthAutoSyncTask?.cancel()
+        healthAutoSyncTask = nil
     }
 
     func loginWithEmail(_ identifier: String) {

@@ -284,6 +284,15 @@ final class HealthKitManager {
         if let value = HKObjectType.quantityType(forIdentifier: .stepCount) {
             readTypes.insert(value)
         }
+        if let value = HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning) {
+            readTypes.insert(value)
+        }
+        if let value = HKObjectType.quantityType(forIdentifier: .heartRate) {
+            readTypes.insert(value)
+        }
+        if let value = HKObjectType.quantityType(forIdentifier: .restingHeartRate) {
+            readTypes.insert(value)
+        }
         if let value = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) {
             readTypes.insert(value)
         }
@@ -522,7 +531,7 @@ final class HealthKitManager {
 
     private func averageQuantity(identifier: HKQuantityTypeIdentifier, from start: Date, to end: Date, unit: HKUnit) async throws -> Double? {
         let type = try quantityType(identifier)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
         return try await withCheckedThrowingContinuation { continuation in
             let query = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate, options: .discreteAverage) { _, result, error in
                 if let error {
@@ -537,7 +546,7 @@ final class HealthKitManager {
 
     private func cumulativeQuantity(identifier: HKQuantityTypeIdentifier, from start: Date, to end: Date, unit: HKUnit) async throws -> Double? {
         let type = try quantityType(identifier)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
         return try await withCheckedThrowingContinuation { continuation in
             let query = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
                 if let error {
@@ -552,7 +561,7 @@ final class HealthKitManager {
 
     private func minimumQuantity(identifier: HKQuantityTypeIdentifier, from start: Date, to end: Date, unit: HKUnit) async throws -> Double? {
         let type = try quantityType(identifier)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
         return try await withCheckedThrowingContinuation { continuation in
             let query = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate, options: .discreteMin) { _, result, error in
                 if let error {
@@ -567,7 +576,7 @@ final class HealthKitManager {
 
     private func maximumQuantity(identifier: HKQuantityTypeIdentifier, from start: Date, to end: Date, unit: HKUnit) async throws -> Double? {
         let type = try quantityType(identifier)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
         return try await withCheckedThrowingContinuation { continuation in
             let query = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate, options: .discreteMax) { _, result, error in
                 if let error {
@@ -582,7 +591,7 @@ final class HealthKitManager {
 
     private func latestQuantity(identifier: HKQuantityTypeIdentifier, from start: Date, to end: Date, unit: HKUnit) async throws -> Double? {
         let type = try quantityType(identifier)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
         return try await withCheckedThrowingContinuation { continuation in
             let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: 1, sortDescriptors: [sort]) { _, samples, error in
@@ -599,7 +608,7 @@ final class HealthKitManager {
 
     private func totalSleepHours(from start: Date, to end: Date) async throws -> Double? {
         let type = try categoryType(.sleepAnalysis)
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
         return try await withCheckedThrowingContinuation { continuation in
             let query = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, samples, error in
                 if let error {

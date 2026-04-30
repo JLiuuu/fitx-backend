@@ -72,6 +72,9 @@ final class HomeViewModel: ObservableObject {
     var carbsProgressText: String { "\(dashboard.carbsConsumed)/\(dashboard.carbsGoal) g" }
     var fatProgressText: String { "\(dashboard.fatConsumed)/\(dashboard.fatGoal) g" }
     var calorieConsumed: Int { dashboard.caloriesConsumed }
+    var nutritionTotalCaloriesText: String { "\(dashboard.caloriesConsumed) kcal" }
+    var activeEnergyForExpenditure: Int { max(0, appState.todayActiveEnergyKcal) }
+    var todayTotalExpenditureKcal: Int { bmrKcal + activeEnergyForExpenditure }
     var calorieGoal: Int { max(1, dashboard.calorieGoal) }
     var calorieProgress: Double { min(1.0, Double(calorieConsumed) / Double(calorieGoal)) }
     var proteinConsumed: Int { dashboard.proteinConsumed }
@@ -497,8 +500,6 @@ final class NutritionViewModel: ObservableObject {
     var calorieGoal: Int { appState.dashboard.calorieGoal }
     var primaryGoal: PrimaryGoal { appState.userProfile?.primaryGoal ?? .muscleGain }
     var bmrKcal: Int { Int((appState.userProfile?.bmr ?? 1650).rounded()) }
-    var activeBurnKcal: Int { max(0, appState.todayActiveEnergyKcal) }
-    var totalExpenditureKcal: Int { bmrKcal + activeBurnKcal }
 
     func requestMealScanPreview() async -> MealScanResult? {
         await appState.requestMealScanPreview()
@@ -1115,6 +1116,13 @@ final class AIAssistantViewModel: ObservableObject {
         }
 
         if looksLikeMeal {
+            if hasImage {
+                return (
+                    "I received your photo, but I could not extract reliable nutrition details this time. Please try sending again or add the meal name and rough calories.",
+                    nil,
+                    nil
+                )
+            }
             let calories = Int(firstMatch("(\\d+)\\s*(kcal|calories|calorie)", in: lower) ?? "480") ?? 480
             let protein = Int(firstMatch("(\\d+)\\s*(g\\s*)?(protein)", in: lower) ?? "30") ?? 30
             let carbs = Int(firstMatch("(\\d+)\\s*(g\\s*)?(carb|carbs)", in: lower) ?? "45") ?? 45
@@ -1127,11 +1135,11 @@ final class AIAssistantViewModel: ObservableObject {
                 carbs,
                 fat
             )
-            return ("Parsed nutrition locally and added to Nutrition.", draft, nil)
+            return ("I estimated this meal from your text. Confirm to add it to Nutrition.", draft, nil)
         }
 
         return (
-            "",
+            "I am here. Ask me anything about training, nutrition, recovery, or send a meal/workout entry and I will help right away.",
             nil,
             nil
         )

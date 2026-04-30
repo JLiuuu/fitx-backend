@@ -64,7 +64,34 @@ struct HomeView: View {
                     MacroRingsCard(
                         protein: (viewModel.proteinConsumed, viewModel.proteinGoal, viewModel.proteinProgress),
                         carbs: (viewModel.carbsConsumed, viewModel.carbsGoal, viewModel.carbsProgress),
-                        fat: (viewModel.fatConsumed, viewModel.fatGoal, viewModel.fatProgress)
+                        fat: (viewModel.fatConsumed, viewModel.fatGoal, viewModel.fatProgress),
+                        totalCaloriesText: viewModel.nutritionTotalCaloriesText
+                    )
+
+                    AppSectionCard(title: "Today's Expenditure", subtitle: "BMR + Active Energy") {
+                        HStack {
+                            Text("BMR")
+                                .secondaryHelperText()
+                            Spacer()
+                            Text("\(viewModel.bmrKcal) kcal")
+                                .font(.headline.monospacedDigit())
+                        }
+                        HStack {
+                            Text("Active (Watch)")
+                                .secondaryHelperText()
+                            Spacer()
+                            Text("\(viewModel.activeEnergyForExpenditure) kcal")
+                                .font(.headline.monospacedDigit())
+                        }
+                        Divider().overlay(Color.white.opacity(AppTheme.dividerOpacity))
+                        HStack {
+                            Text("Total")
+                                .font(.subheadline.weight(.semibold))
+                            Spacer()
+                            Text("\(viewModel.todayTotalExpenditureKcal) kcal")
+                                .font(.title3.bold().monospacedDigit())
+                                .foregroundStyle(AppTheme.iconGradient)
+                        }
                     )
 
                     AppSectionCard(title: "Recovery Signals", subtitle: "Apple Watch key metrics") {
@@ -323,6 +350,8 @@ private struct UnifiedAIAssistantSheet: View {
                     }
                 }
 
+                Spacer(minLength: 0)
+
                 if !cameraMessage.isEmpty {
                     Text(cameraMessage)
                         .font(.caption2)
@@ -395,6 +424,12 @@ private struct UnifiedAIAssistantSheet: View {
                                     let drafts = viewModel.defaultPlanDrafts(for: target)
                                     trainingFlowState = .planReady(target: target, drafts: drafts)
                                     viewModel.appendChatMessage(role: "assistant", text: "How does this plan look? If you are OK with it, I can add it to today's Training.")
+                                    pendingBinaryPrompt = BinaryPrompt(
+                                        prompt: "Add this \(target) plan to today's Training data?",
+                                        yesTitle: "Yes ✅",
+                                        noTitle: "No ❌",
+                                        kind: .addPlanToTraining(drafts: drafts)
+                                    )
                                     isSending = false
                                 case .addPlanToTraining(let drafts):
                                     viewModel.addWorkoutPlanDrafts(drafts)
@@ -668,7 +703,6 @@ private struct UnifiedAIAssistantSheet: View {
                             noTitle: "No ❌",
                             kind: .addPlanToTraining(drafts: drafts)
                         )
-                        viewModel.appendChatMessage(role: "assistant", text: "Would you like me to add this plan to today's Training?")
                         isSending = false
                         return
                     }
@@ -1336,31 +1370,6 @@ struct NutritionView: View {
                         fat: (todaySummary.fat, max(1, viewModel.fatGoal))
                     )
 
-                    AppSectionCard(title: "Today's Expenditure", subtitle: "BMR + Active Energy") {
-                        HStack {
-                            Text("BMR")
-                                .secondaryHelperText()
-                            Spacer()
-                            Text("\(viewModel.bmrKcal) kcal")
-                                .font(.headline.monospacedDigit())
-                        }
-                        HStack {
-                            Text("Active (Watch)")
-                                .secondaryHelperText()
-                            Spacer()
-                            Text("\(viewModel.activeBurnKcal) kcal")
-                                .font(.headline.monospacedDigit())
-                        }
-                        Divider().overlay(Color.white.opacity(AppTheme.dividerOpacity))
-                        HStack {
-                            Text("Total")
-                                .font(.subheadline.weight(.semibold))
-                            Spacer()
-                            Text("\(viewModel.totalExpenditureKcal) kcal")
-                                .font(.title3.bold().monospacedDigit())
-                                .foregroundStyle(AppTheme.iconGradient)
-                        }
-                    }
                     AppSectionCard(title: "Need Food Suggestions?") {
                         Text("Ask AI what to eat based on your current macro gap and calorie target.")
                             .secondaryHelperText()

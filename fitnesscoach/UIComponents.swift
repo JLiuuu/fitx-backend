@@ -278,6 +278,7 @@ struct MacroRingsCard: View {
     let protein: (current: Int, goal: Int, progress: Double)
     let carbs: (current: Int, goal: Int, progress: Double)
     let fat: (current: Int, goal: Int, progress: Double)
+    let totalCaloriesText: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -309,6 +310,16 @@ struct MacroRingsCard: View {
                         .frame(width: 70, height: 70)
                 }
                 VStack(alignment: .leading, spacing: 5) {
+                    HStack(spacing: 8) {
+                        Text("Calories")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(totalCaloriesText)
+                            .font(.title3.bold())
+                            .monospacedDigit()
+                    }
+                    Divider().overlay(Color.white.opacity(AppTheme.dividerOpacity))
                     macroLine(label: "Protein", current: protein.current, goal: protein.goal)
                     macroLine(label: "Carbs", current: carbs.current, goal: carbs.goal)
                     macroLine(label: "Fat", current: fat.current, goal: fat.goal)
