@@ -157,7 +157,8 @@ final class WorkoutViewModel: ObservableObject {
     init(appState: AppState) { self.appState = appState }
 
     var workoutLogs: [WorkoutLogItem] { appState.workoutLogs }
-    var totalBurnedKcal: Int { appState.dashboard.calorieGoal }
+    /// Training target should always come from the user's Daily Workout Goal.
+    var totalBurnedKcal: Int { max(80, appState.userProfile?.dailyWorkoutGoalKcal ?? 300) }
     var trainingBurnKcal: Int { appState.workoutLogs.reduce(0) { $0 + $1.estimatedCalories } }
     /// Duration comes ONLY from Apple Watch / HealthKit (exercise minutes).
     /// If there is no data, the UI should show N/A.
@@ -727,19 +728,63 @@ final class ProfileViewModel: ObservableObject {
 
 @MainActor
 final class AIAssistantViewModel: ObservableObject {
+    struct ChatMessage: Identifiable {
+        let id: UUID
+        let role: String
+        let text: String
+        let imageData: Data?
+    }
+
     typealias MealDraft = (name: String, calories: Int, protein: Int, carbs: Int, fat: Int)
     typealias WorkoutDraft = (exercise: String, sets: Int, reps: Int, weight: Double, rpe: Int)
     private let appState: AppState
     private let geminiService = GeminiAssistantService()
     private let voiceTranscriber = VoiceTranscriptionService()
+    @Published private(set) var chatMessages: [ChatMessage]
 
-    init(appState: AppState) { self.appState = appState }
+    init(appState: AppState) {
+        self.appState = appState
+        self.chatMessages = [
+            ChatMessage(
+                id: UUID(),
+                role: "assistant",
+                text: "Hi, I’m FitX AI. You can send text, voice, or photos. I can sync your workouts, analyze your nutrition, or give instant training advice based on your current status. Would you like to talk about today’s workout, or log the lunch you just had?",
+                imageData: nil
+            )
+        ]
+    }
 
     var remainingCount: Int { appState.aiAssistantRemainingCount }
     var dailyLimit: Int { appState.aiAssistantDailyLimit }
     var quotaText: String { "\(remainingCount)/\(dailyLimit) remaining today" }
     var isQuotaExceeded: Bool { remainingCount <= 0 }
     var voicePermissionStatus: VoicePermissionStatus { appState.voicePermissionStatus }
+    var trainingTodayPrompt: String {
+        let readiness = appState.dashboard.readinessScore
+        let sortedByRecovery = appState.recoveryItems
+            .sorted { (100 - $0.fatigueScore) > (100 - $1.fatigueScore) }
+        let topTrainable = sortedByRecovery.prefix(4).map { "\($0.muscleName): \(max(0, min(100, 100 - $0.fatigueScore)))%" }
+        let mostFatigued = appState.recoveryItems
+            .sorted { $0.fatigueScore > $1.fatigueScore }
+            .prefix(3)
+            .map { "\($0.muscleName): \(max(0, min(100, 100 - $0.fatigueScore)))%" }
+
+        return """
+        What should I train today?
+        Recovery snapshot:
+        - Overall readiness: \(readiness)%
+        - Most trainable muscles: \(topTrainable.joined(separator: ", "))
+        - Most fatigued muscles: \(mostFatigued.joined(separator: ", "))
+
+        Please first tell me which parts are good to train today and which should be avoided.
+        Then ask me what I want to train.
+        After I answer, give me a specific workout plan (exercise, sets, reps, and notes).
+        """
+    }
+
+    func appendChatMessage(role: String, text: String, imageData: Data? = nil) {
+        chatMessages.append(ChatMessage(id: UUID(), role: role, text: text, imageData: imageData))
+    }
 
     func requestVoiceAccess() async {
         await appState.requestVoiceInputAccess()

@@ -290,19 +290,36 @@ final class HealthKitManager {
 
         do {
             try await store.requestAuthorization(toShare: [], read: readTypes)
-            let snapshot = try await fetchRecoverySnapshot()
-            let insights = buildInsights(from: snapshot)
-            let exerciseText = snapshot.exerciseMinutes.map { "\(Int($0.rounded())) min" } ?? "--"
-            let summary = "Recovery \(snapshot.recoveryScore) • HRV \(snapshot.todayHRVText) • RHR \(snapshot.todayRHRText) • Sleep \(snapshot.sleepHoursText) • Exercise \(exerciseText) • Steps \(snapshot.stepsText)"
-            return HealthSyncResult(
-                status: .authorized,
-                summary: summary,
-                readinessScore: snapshot.recoveryScore,
-                insights: insights,
-                exerciseMinutes: snapshot.exerciseMinutes
-            )
+            do {
+                let snapshot = try await fetchRecoverySnapshot()
+                let insights = buildInsights(from: snapshot)
+                let exerciseText = snapshot.exerciseMinutes.map { "\(Int($0.rounded())) min" } ?? "--"
+                let summary = "Recovery \(snapshot.recoveryScore) • HRV \(snapshot.todayHRVText) • RHR \(snapshot.todayRHRText) • Sleep \(snapshot.sleepHoursText) • Exercise \(exerciseText) • Steps \(snapshot.stepsText)"
+                return HealthSyncResult(
+                    status: .authorized,
+                    summary: summary,
+                    readinessScore: snapshot.recoveryScore,
+                    insights: insights,
+                    exerciseMinutes: snapshot.exerciseMinutes
+                )
+            } catch {
+                // Authorization can succeed while recent sample windows are empty.
+                return HealthSyncResult(
+                    status: .authorized,
+                    summary: "Authorized. No recent Apple Watch/Health samples found yet. Open Apple Health and ensure FitX can read Heart Rate, HRV, Resting HR, Sleep, Exercise Time, Active Energy, and Steps.",
+                    readinessScore: nil,
+                    insights: [],
+                    exerciseMinutes: nil
+                )
+            }
         } catch {
-            return HealthSyncResult(status: .denied, summary: "Authorization failed: \(error.localizedDescription)", readinessScore: nil, insights: [], exerciseMinutes: nil)
+            return HealthSyncResult(
+                status: .denied,
+                summary: "Health data access is denied or incomplete. Open iOS Settings > Privacy & Security > Health > FitX and enable permissions for Heart Rate, HRV, Resting HR, Sleep, Exercise Time, Active Energy, and Steps.",
+                readinessScore: nil,
+                insights: [],
+                exerciseMinutes: nil
+            )
         }
         #else
         return HealthSyncResult(

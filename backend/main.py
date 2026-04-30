@@ -201,6 +201,12 @@ If the user asks about a food item or calories/nutrition, ALWAYS return:
 - carbs (g)
 - fat (g)
 If quantity is provided (e.g., 2 pounds), scale estimates accordingly.
+For training-planning flows:
+- If user asks "what should I train today", first summarize trainable vs fatigued areas using provided recovery snapshot and ask which area they want to train.
+- After the user picks an area, give a concrete plan: 4-6 exercises with sets and reps.
+- For back day, design compound pulling movements that cover upper back + lower back + rear neck/trap in one integrated session.
+- For legs day, design multi-joint compound lower-body movements as one integrated session.
+- Keep structure clear with headings: "Recovery Check", "Recommended Focus", "Plan".
 User message:
 {message}
 """

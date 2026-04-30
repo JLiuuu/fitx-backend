@@ -46,16 +46,6 @@ struct HomeView: View {
                     }
                     .transition(.move(edge: .top).combined(with: .opacity))
 
-                    CaloriesRingCard(
-                        workoutBurn: viewModel.workoutBurnedKcal,
-                        workoutGoal: viewModel.workoutTargetKcal,
-                        workoutProgress: viewModel.workoutProgress,
-                        bmr: viewModel.bmrKcal,
-                        workoutDurationMinutes: viewModel.workoutDurationMinutes,
-                        workoutDurationGoalMinutes: viewModel.workoutDurationTargetMinutes,
-                        workoutDurationProgress: viewModel.workoutDurationProgress
-                    )
-
                     MacroRingsCard(
                         protein: (viewModel.proteinConsumed, viewModel.proteinGoal, viewModel.proteinProgress),
                         carbs: (viewModel.carbsConsumed, viewModel.carbsGoal, viewModel.carbsProgress),
@@ -205,26 +195,33 @@ struct RecoveryView: View {
     }
 }
 
-private struct AIChatMessage: Identifiable {
-    let id = UUID()
-    let role: String
-    let text: String
-    let imageData: Data?
-
-    init(role: String, text: String, imageData: Data? = nil) {
-        self.role = role
-        self.text = text
-        self.imageData = imageData
-    }
-}
-
 private struct UnifiedAIAssistantSheet: View {
+    private enum PendingAssistantAction {
+        case meal(AIAssistantViewModel.MealDraft)
+        case workout(AIAssistantViewModel.WorkoutDraft)
+
+        var prompt: String {
+            switch self {
+            case .meal:
+                return "Add this to your Nutrition today?"
+            case .workout:
+                return "Add this to your Training today?"
+            }
+        }
+
+        var addButtonTitle: String {
+            switch self {
+            case .meal:
+                return "Add to Nutrition"
+            case .workout:
+                return "Add to Training"
+            }
+        }
+    }
+
     @ObservedObject var viewModel: AIAssistantViewModel
     let initialAutoPrompt: String?
     @Environment(\.dismiss) private var dismiss
-    @State private var messages: [AIChatMessage] = [
-        AIChatMessage(role: "assistant", text: "Hi, I’m FitX AI. You can send text, voice, or photos. I can sync your workouts, analyze your nutrition, or give instant training advice based on your current status. Would you like to talk about today’s workout, or log the lunch you just had?")
-    ]
     @State private var composerText = ""
     @State private var isListening = false
     @State private var isSending = false
@@ -232,8 +229,7 @@ private struct UnifiedAIAssistantSheet: View {
     @State private var selectedImageData: Data?
     @State private var cameraMessage = ""
     @State private var showCameraCaptureSheet = false
-    @State private var pendingWorkoutDraft: AIAssistantViewModel.WorkoutDraft?
-    @State private var showWorkoutConfirmDialog = false
+    @State private var pendingAssistantAction: PendingAssistantAction?
     @State private var scrollAnchor = UUID()
     @State private var didAutoPrompt = false
     @State private var selectedPreviewImageData: Data?
@@ -259,7 +255,7 @@ private struct UnifiedAIAssistantSheet: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(alignment: .leading, spacing: 10) {
-                            ForEach(messages) { message in
+                            ForEach(viewModel.chatMessages) { message in
                                 messageRow(message)
                             }
                             Color.clear
@@ -268,7 +264,7 @@ private struct UnifiedAIAssistantSheet: View {
                         }
                     }
                     .textSelection(.enabled)
-                    .onChange(of: messages.count) { _, _ in
+                    .onChange(of: viewModel.chatMessages.count) { _, _ in
                         withAnimation(AppTheme.standardAnimation) {
                             proxy.scrollTo(scrollAnchor, anchor: .bottom)
                         }
@@ -282,62 +278,50 @@ private struct UnifiedAIAssistantSheet: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
+                if let pendingAssistantAction {
+                    HStack(spacing: 8) {
+                        Text(pendingAssistantAction.prompt)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(AppTheme.textPrimary)
+                            .lineLimit(2)
+                        Spacer(minLength: 8)
+                        Button("Dismiss") {
+                            self.pendingAssistantAction = nil
+                        }
+                        .font(.caption.weight(.semibold))
+                        .buttonStyle(.plain)
+                        .foregroundStyle(AppTheme.textSecondary)
+
+                        Button(pendingAssistantAction.addButtonTitle) {
+                            switch pendingAssistantAction {
+                            case .meal(let draft):
+                                viewModel.confirmMeal(draft)
+                                viewModel.appendChatMessage(role: "assistant", text: "Added to Nutrition.")
+                            case .workout(let draft):
+                                viewModel.confirmWorkout(draft)
+                                viewModel.appendChatMessage(role: "assistant", text: "Added to Training.")
+                            }
+                            self.pendingAssistantAction = nil
+                        }
+                        .font(.caption.weight(.bold))
+                        .buttonStyle(.plain)
+                        .foregroundStyle(AppTheme.accent)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(Color.white.opacity(0.08))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                }
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         Button {
-                            composerText = "Log lunch photo"
-                            cameraMessage = "Please select or take a lunch photo, then tap send."
-                        } label: {
-                            Text("📸 Log lunch photo")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(AppTheme.textPrimary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(
-                                    LinearGradient(
-                                        colors: [AppTheme.accent2, AppTheme.accent],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                    .opacity(0.18)
-                                )
-                                .overlay(
-                                    Capsule(style: .continuous)
-                                        .stroke(AppTheme.iconGradient.opacity(0.45), lineWidth: 1)
-                                )
-                                .clipShape(Capsule(style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-
-                        Button {
                             cameraMessage = ""
-                            composerText = "Manual training entry: please provide sets, reps, weight (kg/lb), and RPE."
-                            sendMessage()
-                        } label: {
-                            Text("🏃‍♂️ Manual training entry")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(AppTheme.textPrimary)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(
-                                    LinearGradient(
-                                        colors: [AppTheme.accent2, AppTheme.accent],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                    .opacity(0.18)
-                                )
-                                .overlay(
-                                    Capsule(style: .continuous)
-                                        .stroke(AppTheme.iconGradient.opacity(0.45), lineWidth: 1)
-                                )
-                                .clipShape(Capsule(style: .continuous))
-                        }
-                        .buttonStyle(.plain)
-
-                        Button {
-                            cameraMessage = ""
-                            composerText = "What should I train today?"
+                            composerText = viewModel.trainingTodayPrompt
                             sendMessage()
                         } label: {
                             Text("🧠 What should I train today?")
@@ -475,10 +459,16 @@ private struct UnifiedAIAssistantSheet: View {
                 }
             }
             .padding()
+            .appBackground()
             .navigationTitle("AI Assistant")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title3)
+                    }
                 }
             }
             .onChange(of: selectedPhotoItem) { _, newItem in
@@ -495,27 +485,6 @@ private struct UnifiedAIAssistantSheet: View {
                 didAutoPrompt = true
                 composerText = prompt
                 sendMessage()
-            }
-            .alert("Confirm Workout Result", isPresented: $showWorkoutConfirmDialog) {
-                Button("Cancel", role: .cancel) {
-                    pendingWorkoutDraft = nil
-                }
-                Button("Confirm") {
-                    if let pendingWorkoutDraft {
-                        viewModel.confirmWorkout(pendingWorkoutDraft)
-                        messages.append(.init(role: "assistant", text: "Workout confirmed and added to Training."))
-                    }
-                    pendingWorkoutDraft = nil
-                }
-            } message: {
-                if let pendingWorkoutDraft {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Exercise: \(pendingWorkoutDraft.exercise)")
-                        Text("Sets: \(pendingWorkoutDraft.sets), Reps: \(pendingWorkoutDraft.reps)")
-                        let weightText = String(format: "%.1f", pendingWorkoutDraft.weight)
-                        Text("Weight: \(weightText), RPE: \(pendingWorkoutDraft.rpe)")
-                    }
-                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -557,9 +526,9 @@ private struct UnifiedAIAssistantSheet: View {
         let text = composerText.trimmingCharacters(in: .whitespacesAndNewlines)
         let imageToSend = selectedImageData
         if !text.isEmpty {
-            messages.append(.init(role: "user", text: text, imageData: imageToSend))
+            viewModel.appendChatMessage(role: "user", text: text, imageData: imageToSend)
         } else if let imageToSend {
-            messages.append(.init(role: "user", text: "", imageData: imageToSend))
+            viewModel.appendChatMessage(role: "user", text: "", imageData: imageToSend)
         }
         composerText = ""
         isSending = true
@@ -568,21 +537,23 @@ private struct UnifiedAIAssistantSheet: View {
         selectedPhotoItem = nil
         Task { @MainActor in
             let result = await viewModel.send(text: text, imageData: image)
+            pendingAssistantAction = nil
             if let pending = result.pendingMeal {
-                viewModel.confirmMeal(pending)
                 let reply = result.reply.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !reply.isEmpty {
-                    messages.append(.init(role: "assistant", text: reply))
-                } else {
-                    messages.append(.init(role: "assistant", text: "Meal logged to Nutrition."))
+                    viewModel.appendChatMessage(role: "assistant", text: reply)
                 }
+                pendingAssistantAction = .meal(pending)
             } else if let pendingWorkout = result.pendingWorkout {
-                pendingWorkoutDraft = pendingWorkout
-                showWorkoutConfirmDialog = true
+                let reply = result.reply.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !reply.isEmpty {
+                    viewModel.appendChatMessage(role: "assistant", text: reply)
+                }
+                pendingAssistantAction = .workout(pendingWorkout)
             } else {
                 let reply = result.reply.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !reply.isEmpty {
-                    messages.append(.init(role: "assistant", text: reply))
+                    viewModel.appendChatMessage(role: "assistant", text: reply)
                 }
             }
             isSending = false
@@ -636,7 +607,7 @@ private struct UnifiedAIAssistantSheet: View {
     }
 
     @ViewBuilder
-    private func messageRow(_ message: AIChatMessage) -> some View {
+    private func messageRow(_ message: AIAssistantViewModel.ChatMessage) -> some View {
         HStack(alignment: .bottom, spacing: 8) {
             if message.role == "assistant" {
                 Circle()
@@ -662,7 +633,7 @@ private struct UnifiedAIAssistantSheet: View {
         }
     }
 
-    private func messageBubble(_ message: AIChatMessage, isUser: Bool) -> some View {
+    private func messageBubble(_ message: AIAssistantViewModel.ChatMessage, isUser: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             if let imageData = message.imageData, let image = uiImage(from: imageData) {
                 Image(uiImage: image)
@@ -1006,8 +977,8 @@ struct WorkoutView: View {
 
                     TrainingRingsCard(
                         workoutBurn: viewModel.trainingBurnKcal,
-                        workoutGoal: max(80, viewModel.totalBurnedKcal - viewModel.restingBurnKcal),
-                        workoutProgress: min(1.0, Double(viewModel.trainingBurnKcal) / Double(max(1, viewModel.totalBurnedKcal - viewModel.restingBurnKcal))),
+                        workoutGoal: viewModel.totalBurnedKcal,
+                        workoutProgress: min(1.0, Double(viewModel.trainingBurnKcal) / Double(max(1, viewModel.totalBurnedKcal))),
                         workoutDurationMinutes: viewModel.trainingDurationMinutes,
                         workoutDurationGoalMinutes: viewModel.trainingDurationTargetMinutes,
                         workoutDurationProgress: viewModel.trainingDurationProgress
@@ -1398,6 +1369,7 @@ struct NutritionView: View {
 
 struct NutritionTrendChart: View {
     let data: [NutritionTrendPoint]
+    @State private var selectedPoint: NutritionTrendPoint?
     private var unifiedTrendGradient: LinearGradient {
         LinearGradient(
             colors: [AppTheme.accent2, AppTheme.accent],
@@ -1442,6 +1414,30 @@ struct NutritionTrendChart: View {
                 .foregroundStyle(unifiedTrendGradient)
                 .lineStyle(.init(lineWidth: 1.6))
             }
+
+            if let selectedPoint {
+                RuleMark(x: .value("Selected Date", selectedPoint.date))
+                    .foregroundStyle(Color.white.opacity(0.5))
+                    .lineStyle(.init(lineWidth: 1, dash: [4, 3]))
+                PointMark(
+                    x: .value("Selected Date", selectedPoint.date),
+                    y: .value("Selected Calories", selectedPoint.calories)
+                )
+                .foregroundStyle(AppTheme.accent)
+                .symbolSize(50)
+                .annotation(position: .top, alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(selectedPoint.date.formatted(date: .abbreviated, time: .omitted))
+                            .font(.caption2.weight(.semibold))
+                        Text("Kcal \(selectedPoint.calories)")
+                        Text("P \(selectedPoint.protein)g  C \(selectedPoint.carbs)g  F \(selectedPoint.fat)g")
+                    }
+                    .font(.caption2)
+                    .padding(8)
+                    .background(Color.black.opacity(0.8))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+            }
         }
         .chartYAxis {
             AxisMarks(position: .leading) { value in
@@ -1460,6 +1456,26 @@ struct NutritionTrendChart: View {
             }
         }
         .frame(height: 210)
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                Rectangle()
+                    .fill(.clear)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                guard let plotFrame = proxy.plotFrame else { return }
+                                let plotRect = geo[plotFrame]
+                                let x = value.location.x - plotRect.origin.x
+                                guard x >= 0, x <= plotRect.size.width,
+                                      let date: Date = proxy.value(atX: x) else { return }
+                                selectedPoint = data.min {
+                                    abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
+                                }
+                            }
+                    )
+            }
+        }
         #else
         Text("Charts is unavailable on this target.")
             .secondaryHelperText()
@@ -1470,6 +1486,7 @@ struct NutritionTrendChart: View {
 
 struct WorkoutTrendChart: View {
     let data: [WorkoutTrendPoint]
+    @State private var selectedPoint: WorkoutTrendPoint?
 
     var body: some View {
         #if canImport(Charts)
@@ -1489,6 +1506,29 @@ struct WorkoutTrendChart: View {
                 )
                 .lineStyle(.init(lineWidth: 2.4))
             }
+
+            if let selectedPoint {
+                RuleMark(x: .value("Selected Date", selectedPoint.date))
+                    .foregroundStyle(Color.white.opacity(0.5))
+                    .lineStyle(.init(lineWidth: 1, dash: [4, 3]))
+                PointMark(
+                    x: .value("Selected Date", selectedPoint.date),
+                    y: .value("Selected Calories", selectedPoint.calories)
+                )
+                .foregroundStyle(AppTheme.accent)
+                .symbolSize(50)
+                .annotation(position: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(selectedPoint.date.formatted(date: .abbreviated, time: .omitted))
+                            .font(.caption2.weight(.semibold))
+                        Text("\(selectedPoint.calories) kcal")
+                            .font(.caption2)
+                    }
+                    .padding(8)
+                    .background(Color.black.opacity(0.8))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+            }
         }
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
@@ -1507,6 +1547,26 @@ struct WorkoutTrendChart: View {
             }
         }
         .frame(height: 190)
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                Rectangle()
+                    .fill(.clear)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                guard let plotFrame = proxy.plotFrame else { return }
+                                let plotRect = geo[plotFrame]
+                                let x = value.location.x - plotRect.origin.x
+                                guard x >= 0, x <= plotRect.size.width,
+                                      let date: Date = proxy.value(atX: x) else { return }
+                                selectedPoint = data.min {
+                                    abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
+                                }
+                            }
+                    )
+            }
+        }
         #else
         Text("Charts is unavailable on this target.")
             .secondaryHelperText()
@@ -1721,6 +1781,18 @@ struct ProfileView: View {
                         Text("Status: \(viewModel.healthStatus.rawValue)")
                         Text(viewModel.latestHealthSummary)
                             .secondaryHelperText()
+                        #if os(iOS) && canImport(UIKit)
+                        if viewModel.healthStatus == .denied {
+                            Button("Open iOS Settings") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            .buttonStyle(PrimaryActionButtonStyle())
+                            Text("Go to Settings > Privacy & Security > Health > FitX, then allow permissions.")
+                                .secondaryHelperText()
+                        }
+                        #endif
                         Text("Recovery insights are estimates and not medical advice.")
                             .secondaryHelperText()
                     }

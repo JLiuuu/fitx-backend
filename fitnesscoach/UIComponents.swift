@@ -408,7 +408,7 @@ struct MacroProgressBarsCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Macro Progress")
+            Text("Nutrition Progress")
                 .font(.headline)
             macroRow(title: "Protein", value: protein.current, goal: protein.goal)
             macroRow(title: "Carbs", value: carbs.current, goal: carbs.goal)
