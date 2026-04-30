@@ -42,10 +42,19 @@ struct HomeView: View {
                                 .foregroundStyle(AppTheme.iconGradient)
                                 .contentTransition(.numericText())
                             Spacer()
-                            Image(systemName: "bolt.heart.fill")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundStyle(AppTheme.iconGradient)
-                                .frame(width: 32, height: 32)
+                            VStack(alignment: .trailing, spacing: 2) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "bolt.heart.fill")
+                                        .font(.system(size: 22, weight: .bold))
+                                        .foregroundStyle(AppTheme.iconGradient)
+                                    Text(viewModel.todayAvgHeartRate > 0 ? "\(viewModel.todayAvgHeartRate)" : "--")
+                                        .font(.headline.bold())
+                                        .foregroundStyle(AppTheme.iconGradient)
+                                }
+                                Text("bpm")
+                                    .font(.caption2)
+                                    .foregroundStyle(AppTheme.textSecondary)
+                            }
                         }
                         Text(dashboard.statusText)
                             .secondaryHelperText()
@@ -55,30 +64,25 @@ struct HomeView: View {
                     MacroRingsCard(
                         protein: (viewModel.proteinConsumed, viewModel.proteinGoal, viewModel.proteinProgress),
                         carbs: (viewModel.carbsConsumed, viewModel.carbsGoal, viewModel.carbsProgress),
-                        fat: (viewModel.fatConsumed, viewModel.fatGoal, viewModel.fatProgress),
-                        calorieDeltaText: viewModel.nutritionCaloriesDeltaText
+                        fat: (viewModel.fatConsumed, viewModel.fatGoal, viewModel.fatProgress)
                     )
 
-                    AppSectionCard(title: "Recovery Signals", subtitle: "HealthKit interpretation") {
-                        if viewModel.healthInsights.isEmpty {
-                            Text(viewModel.latestHealthSummary)
-                                .secondaryHelperText()
-                        } else {
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 8)], spacing: 8) {
-                                ForEach(viewModel.healthInsights, id: \.self) { insight in
-                                    Text(insight)
-                                        .font(.caption)
-                                        .foregroundStyle(.white)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 7)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .background(Color.white.opacity(0.08))
-                                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                                }
-                            }
-                            Text(viewModel.latestHealthSummary)
-                                .tertiaryHelperText()
+                    AppSectionCard(title: "Recovery Signals", subtitle: "Apple Watch key metrics") {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 8)], spacing: 8) {
+                            signalChip(icon: "flame.fill", title: "Active kcal", value: "\(viewModel.todayActiveEnergyKcal)", range: "Typical 300-900")
+                            signalChip(icon: "figure.walk", title: "Steps", value: "\(viewModel.todayStepCount)", range: "Typical 6k-12k")
+                            signalChip(icon: "figure.walk.motion", title: "Distance", value: viewModel.todayDistanceKmText, range: "Typical 4-10 km")
+                            signalChip(icon: "heart.text.square.fill", title: "HRV", value: viewModel.todayHRVms > 0 ? "\(viewModel.todayHRVms) ms" : "--", range: "Typical 30-90 ms")
+                            signalChip(icon: "bed.double.fill", title: "Sleep", value: viewModel.todaySleepHoursText, range: "Goal 7.5-9.0 h")
+                            signalChip(
+                                icon: "waveform.path.ecg",
+                                title: "HR Range",
+                                value: viewModel.todayAvgHeartRate > 0 ? "L \(viewModel.todayMinHeartRate) / A \(viewModel.todayAvgHeartRate) / H \(viewModel.todayMaxHeartRate)" : "--",
+                                range: "Avg target 55-95 bpm"
+                            )
                         }
+                        Text(viewModel.latestHealthSummary)
+                            .tertiaryHelperText()
                     }
 
                     VStack(alignment: .leading, spacing: 8) {
@@ -140,6 +144,29 @@ struct HomeView: View {
             }
             #endif
         }
+    }
+
+    @ViewBuilder
+    private func signalChip(icon: String, title: String, value: String, range: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .foregroundStyle(AppTheme.iconGradient)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AppTheme.textSecondary)
+            }
+            Text(value)
+                .font(.headline.monospacedDigit())
+                .foregroundStyle(AppTheme.textPrimary)
+            Text(range)
+                .font(.caption2)
+                .foregroundStyle(AppTheme.textTertiary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 
@@ -359,7 +386,6 @@ private struct UnifiedAIAssistantSheet: View {
                         Button(pendingBinaryPrompt.yesTitle) {
                             let prompt = pendingBinaryPrompt
                             self.pendingBinaryPrompt = nil
-                            guard let prompt else { return }
                             Task { @MainActor in
                                 switch prompt.kind {
                                 case .generatePlan(let target):
@@ -1176,29 +1202,39 @@ struct WorkoutView: View {
                         )
                     } else {
                         AppSectionCard(title: "Workout History", subtitle: "Tap trash to remove") {
-                            ForEach(viewModel.workoutLogs) { log in
-                                VStack(alignment: .leading, spacing: 6) {
-                                    HStack {
-                                        Text(log.exerciseName)
-                                            .font(.headline)
-                                        Spacer()
-                                        Text("\(log.estimatedCalories) kcal")
-                                            .font(.subheadline)
-                                            .foregroundStyle(AppTheme.accent)
-                                        Button(role: .destructive) {
-                                            pendingDeleteWorkout = log
-                                        } label: {
-                                            Image(systemName: "trash")
+                            ForEach(viewModel.groupedWorkoutLogs, id: \.date) { group in
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text(group.date.formatted(date: .abbreviated, time: .omitted))
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(AppTheme.textTertiary)
+                                    ForEach(group.logs) { log in
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            HStack {
+                                                Text(log.exerciseName)
+                                                    .font(.headline)
+                                                Spacer()
+                                                Text("\(log.estimatedCalories) kcal")
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(AppTheme.accent)
+                                                Button(role: .destructive) {
+                                                    pendingDeleteWorkout = log
+                                                } label: {
+                                                    Image(systemName: "trash")
+                                                }
+                                                .buttonStyle(.plain)
+                                            }
+                                            Text(viewModel.workoutHistoryWeightSubtitle(for: log))
+                                                .secondaryHelperText()
+                                            Text(log.loggedAt.formatted(date: .omitted, time: .shortened))
+                                                .tertiaryHelperText()
                                         }
-                                        .buttonStyle(.plain)
+                                        .padding(.vertical, 4)
+                                        if log.id != group.logs.last?.id {
+                                            Divider().overlay(Color.white.opacity(AppTheme.dividerOpacity))
+                                        }
                                     }
-                                    Text(viewModel.workoutHistoryWeightSubtitle(for: log))
-                                        .secondaryHelperText()
-                                    Text(log.loggedAt.formatted(date: .abbreviated, time: .shortened))
-                                        .tertiaryHelperText()
                                 }
-                                .padding(.vertical, 4)
-                                if log.id != viewModel.workoutLogs.last?.id {
+                                if group.date != viewModel.groupedWorkoutLogs.last?.date {
                                     Divider().overlay(Color.white.opacity(AppTheme.dividerOpacity))
                                 }
                             }
@@ -1299,6 +1335,32 @@ struct NutritionView: View {
                         carbs: (todaySummary.carbs, max(1, viewModel.carbsGoal)),
                         fat: (todaySummary.fat, max(1, viewModel.fatGoal))
                     )
+
+                    AppSectionCard(title: "Today's Expenditure", subtitle: "BMR + Active Energy") {
+                        HStack {
+                            Text("BMR")
+                                .secondaryHelperText()
+                            Spacer()
+                            Text("\(viewModel.bmrKcal) kcal")
+                                .font(.headline.monospacedDigit())
+                        }
+                        HStack {
+                            Text("Active (Watch)")
+                                .secondaryHelperText()
+                            Spacer()
+                            Text("\(viewModel.activeBurnKcal) kcal")
+                                .font(.headline.monospacedDigit())
+                        }
+                        Divider().overlay(Color.white.opacity(AppTheme.dividerOpacity))
+                        HStack {
+                            Text("Total")
+                                .font(.subheadline.weight(.semibold))
+                            Spacer()
+                            Text("\(viewModel.totalExpenditureKcal) kcal")
+                                .font(.title3.bold().monospacedDigit())
+                                .foregroundStyle(AppTheme.iconGradient)
+                        }
+                    }
                     AppSectionCard(title: "Need Food Suggestions?") {
                         Text("Ask AI what to eat based on your current macro gap and calorie target.")
                             .secondaryHelperText()

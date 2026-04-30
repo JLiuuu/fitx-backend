@@ -294,13 +294,29 @@ final class HealthKitManager {
                 let snapshot = try await fetchRecoverySnapshot()
                 let insights = buildInsights(from: snapshot)
                 let exerciseText = snapshot.exerciseMinutes.map { "\(Int($0.rounded())) min" } ?? "--"
-                let summary = "Recovery \(snapshot.recoveryScore) • HRV \(snapshot.todayHRVText) • RHR \(snapshot.todayRHRText) • Sleep \(snapshot.sleepHoursText) • Exercise \(exerciseText) • Steps \(snapshot.stepsText)"
+                let distanceText = snapshot.distanceKm.map { String(format: "%.2f km", $0) } ?? "--"
+                let activeText = snapshot.activeEnergyKcal.map { "\(Int($0.rounded())) kcal" } ?? "--"
+                let hrRange = snapshot.avgHeartRate.map {
+                    "avg \(Int($0.rounded())) bpm (min \(Int((snapshot.minHeartRate ?? $0).rounded())) / max \(Int((snapshot.maxHeartRate ?? $0).rounded())))"
+                } ?? "--"
+                let summary = "Recovery \(snapshot.recoveryScore) • HRV \(snapshot.todayHRVText) • Sleep \(snapshot.sleepHoursText) • Active \(activeText) • Exercise \(exerciseText) • Steps \(snapshot.stepsText) • Distance \(distanceText) • HR \(hrRange)"
                 return HealthSyncResult(
                     status: .authorized,
                     summary: summary,
                     readinessScore: snapshot.recoveryScore,
                     insights: insights,
-                    exerciseMinutes: snapshot.exerciseMinutes
+                    exerciseMinutes: snapshot.exerciseMinutes,
+                    snapshot: HealthSignalSnapshot(
+                        activeEnergyKcal: snapshot.activeEnergyKcal,
+                        exerciseMinutes: snapshot.exerciseMinutes,
+                        stepCount: snapshot.stepCount,
+                        distanceKm: snapshot.distanceKm,
+                        hrvMs: snapshot.todayHRV,
+                        sleepHours: snapshot.sleepHours,
+                        avgHeartRate: snapshot.avgHeartRate,
+                        minHeartRate: snapshot.minHeartRate,
+                        maxHeartRate: snapshot.maxHeartRate
+                    )
                 )
             } catch {
                 // Authorization can succeed while recent sample windows are empty.
@@ -309,7 +325,8 @@ final class HealthKitManager {
                     summary: "Authorized. No recent Apple Watch/Health samples found yet. Open Apple Health and ensure FitX can read Heart Rate, HRV, Resting HR, Sleep, Exercise Time, Active Energy, and Steps.",
                     readinessScore: nil,
                     insights: [],
-                    exerciseMinutes: nil
+                    exerciseMinutes: nil,
+                    snapshot: nil
                 )
             }
         } catch {
@@ -318,7 +335,8 @@ final class HealthKitManager {
                 summary: "Health data access is denied or incomplete. Open iOS Settings > Privacy & Security > Health > FitX and enable permissions for Heart Rate, HRV, Resting HR, Sleep, Exercise Time, Active Energy, and Steps.",
                 readinessScore: nil,
                 insights: [],
-                exerciseMinutes: nil
+                exerciseMinutes: nil,
+                snapshot: nil
             )
         }
         #else
@@ -327,7 +345,8 @@ final class HealthKitManager {
             summary: "HealthKit is unavailable on current target. Using mock fitness signals.",
             readinessScore: nil,
             insights: [],
-            exerciseMinutes: nil
+            exerciseMinutes: nil,
+            snapshot: nil
         )
         #endif
     }
@@ -343,6 +362,10 @@ final class HealthKitManager {
         let activeEnergyKcal: Double?
         let exerciseMinutes: Double?
         let stepCount: Double?
+        let distanceKm: Double?
+        let avgHeartRate: Double?
+        let minHeartRate: Double?
+        let maxHeartRate: Double?
 
         var todayHRVText: String { todayHRV.map { "\(Int($0)) ms" } ?? "--" }
         var todayRHRText: String { todayRHR.map { "\(Int($0)) bpm" } ?? "--" }
@@ -366,6 +389,10 @@ final class HealthKitManager {
         async let activeEnergy = cumulativeQuantity(identifier: .activeEnergyBurned, from: startOfToday, to: now, unit: .kilocalorie())
         async let exerciseMinutes = cumulativeQuantity(identifier: .appleExerciseTime, from: startOfToday, to: now, unit: .minute())
         async let stepCount = cumulativeQuantity(identifier: .stepCount, from: startOfToday, to: now, unit: .count())
+        async let distanceKm = cumulativeQuantity(identifier: .distanceWalkingRunning, from: startOfToday, to: now, unit: .meterUnit(with: .kilo))
+        async let avgHeartRate = averageQuantity(identifier: .heartRate, from: startOfToday, to: now, unit: HKUnit.count().unitDivided(by: .minute()))
+        async let minHeartRate = minimumQuantity(identifier: .heartRate, from: startOfToday, to: now, unit: HKUnit.count().unitDivided(by: .minute()))
+        async let maxHeartRate = maximumQuantity(identifier: .heartRate, from: startOfToday, to: now, unit: HKUnit.count().unitDivided(by: .minute()))
 
         let raw = RecoverySnapshot(
             recoveryScore: 70,
@@ -376,7 +403,11 @@ final class HealthKitManager {
             sleepHours: try await sleepHours,
             activeEnergyKcal: try await activeEnergy,
             exerciseMinutes: try await exerciseMinutes,
-            stepCount: try await stepCount
+            stepCount: try await stepCount,
+            distanceKm: try await distanceKm,
+            avgHeartRate: try await avgHeartRate,
+            minHeartRate: try await minHeartRate,
+            maxHeartRate: try await maxHeartRate
         )
         let score = computeRecoveryScore(from: raw)
         return RecoverySnapshot(
@@ -388,7 +419,11 @@ final class HealthKitManager {
             sleepHours: raw.sleepHours,
             activeEnergyKcal: raw.activeEnergyKcal,
             exerciseMinutes: raw.exerciseMinutes,
-            stepCount: raw.stepCount
+            stepCount: raw.stepCount,
+            distanceKm: raw.distanceKm,
+            avgHeartRate: raw.avgHeartRate,
+            minHeartRate: raw.minHeartRate,
+            maxHeartRate: raw.maxHeartRate
         )
     }
 
@@ -510,6 +545,36 @@ final class HealthKitManager {
                     return
                 }
                 continuation.resume(returning: result?.sumQuantity()?.doubleValue(for: unit))
+            }
+            store.execute(query)
+        }
+    }
+
+    private func minimumQuantity(identifier: HKQuantityTypeIdentifier, from start: Date, to end: Date, unit: HKUnit) async throws -> Double? {
+        let type = try quantityType(identifier)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        return try await withCheckedThrowingContinuation { continuation in
+            let query = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate, options: .discreteMin) { _, result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: result?.minimumQuantity()?.doubleValue(for: unit))
+            }
+            store.execute(query)
+        }
+    }
+
+    private func maximumQuantity(identifier: HKQuantityTypeIdentifier, from start: Date, to end: Date, unit: HKUnit) async throws -> Double? {
+        let type = try quantityType(identifier)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
+        return try await withCheckedThrowingContinuation { continuation in
+            let query = HKStatisticsQuery(quantityType: type, quantitySamplePredicate: predicate, options: .discreteMax) { _, result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: result?.maximumQuantity()?.doubleValue(for: unit))
             }
             store.execute(query)
         }

@@ -471,6 +471,19 @@ struct HealthSyncResult {
     let readinessScore: Int?
     let insights: [String]
     let exerciseMinutes: Double?
+    let snapshot: HealthSignalSnapshot?
+}
+
+struct HealthSignalSnapshot: Codable {
+    let activeEnergyKcal: Double?
+    let exerciseMinutes: Double?
+    let stepCount: Double?
+    let distanceKm: Double?
+    let hrvMs: Double?
+    let sleepHours: Double?
+    let avgHeartRate: Double?
+    let minHeartRate: Double?
+    let maxHeartRate: Double?
 }
 
 enum SubscriptionPlan: String {

@@ -183,6 +183,8 @@ Rules:
 - Use best-effort estimates even when uncertain.
 - In reply, include food identification first (what the food likely is), then calorie + macros.
 - For nutrition questions ("how many calories", "nutrition facts", "how much protein/carbs/fat"), return all 4 values (calories/protein/carbs/fat) whenever possible.
+- If the image is a supplement/non-food product and exact nutrition cannot be read, set calories/protein/carbs/fat to null (do NOT fake 0/0/0/0).
+- For supplement questions, include likely fitness benefit (e.g., recovery, performance, protein support) and practical use note.
 - If this is not a meal logging message and no image is attached, set nutrition fields to null.
 - If values are unknown, use null.
 User message:
@@ -195,18 +197,32 @@ def _chat_prompt(message: str) -> str:
 Respond in concise English only.
 Be practical and fitness-focused.
 Use conversation context to resolve references like "that", "same", "what about 2 pounds", etc.
+Be conversational and natural, like a smart supportive friend + coach (not robotic).
+For daily conversation, prioritize helpful human-like dialogue over rigid tool-style output.
+Keep tone warm, encouraging, and specific. Avoid repetitive template phrases.
+If user asks multiple questions, answer ALL of them in one reply with short sections.
 If the user asks about a food item or calories/nutrition, ALWAYS return:
 - estimated calories
 - protein (g)
 - carbs (g)
 - fat (g)
 If quantity is provided (e.g., 2 pounds), scale estimates accordingly.
+If user asks fat-loss or muscle-gain timeline:
+- explain with simple math using 3500 kcal ~= 1 lb fat (theoretical)
+- provide estimated days/weeks range
+- mention this is theoretical and real-world varies.
+If user asks about supplements:
+- give practical supplement suggestions for training goal
+- include what each does, when to take, and typical dosage range
+- if user asks for brands, provide 3-5 common brand examples
+- include direct Amazon search links (https://www.amazon.com/s?k=...) so they can click to buy.
 For training-planning flows:
 - If user asks "what should I train today", first summarize trainable vs fatigued areas using provided recovery snapshot and ask which area they want to train.
 - After the user picks an area, give a concrete plan: 4-6 exercises with sets and reps.
 - For back day, design compound pulling movements that cover upper back + lower back + rear neck/trap in one integrated session.
 - For legs day, design multi-joint compound lower-body movements as one integrated session.
 - Keep structure clear with headings: "Recovery Check", "Recommended Focus", "Plan".
+When user asks about a specific movement, include form cues, common mistakes, safer alternatives, and progression tips.
 User message:
 {message}
 """

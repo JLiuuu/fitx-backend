@@ -24,6 +24,14 @@ final class AppState: ObservableObject {
     @Published var latestHealthSummary: String = "Health data has not been synced yet."
     @Published var todayExerciseMinutes: Int = 0
     @Published var healthInsights: [String] = []
+    @Published var todayActiveEnergyKcal: Int = 0
+    @Published var todayStepCount: Int = 0
+    @Published var todayDistanceKm: Double = 0
+    @Published var todayHRVms: Int = 0
+    @Published var todaySleepHours: Double = 0
+    @Published var todayAvgHeartRate: Int = 0
+    @Published var todayMinHeartRate: Int = 0
+    @Published var todayMaxHeartRate: Int = 0
     @Published var voicePermissionStatus: VoicePermissionStatus = .notRequested
     @Published var voicePermissionMessage: String = "Voice permissions not requested."
     @Published var lastWorkoutSummary: String = "No workouts logged yet."
@@ -47,6 +55,8 @@ final class AppState: ObservableObject {
     private let subscriptionManager = SubscriptionManager()
     private let userID = "demo-user"
     private var lastHealthReadinessScore: Int?
+    private var currentDayKey: String = Self.dayKey(for: Date())
+    private var dayChangedObserver: NSObjectProtocol?
 
     init() {
         if let saved = persistence.load() {
@@ -85,6 +95,7 @@ final class AppState: ObservableObject {
                 applyNutritionTargets(for: profile)
             }
             recomputeDashboardReadiness()
+            currentDayKey = Self.dayKey(for: Date())
         } else {
             let defaultDashboard = Self.defaultDashboard()
             let defaultRecovery = Self.emptyRecoveryItems()
@@ -95,7 +106,15 @@ final class AppState: ObservableObject {
             self.coachAdvice = CoachAdvice.generate(from: defaultDashboard, recoveryItems: defaultRecovery)
             syncTodayNutritionFromMeals()
             refreshCoachAdvice()
+            currentDayKey = Self.dayKey(for: Date())
             persist()
+        }
+        setupDayChangedObserver()
+    }
+
+    deinit {
+        if let dayChangedObserver {
+            NotificationCenter.default.removeObserver(dayChangedObserver)
         }
     }
 
@@ -300,6 +319,25 @@ final class AppState: ObservableObject {
         latestHealthSummary = result.summary
         todayExerciseMinutes = Int((result.exerciseMinutes ?? 0).rounded())
         healthInsights = result.insights
+        if let snapshot = result.snapshot {
+            todayActiveEnergyKcal = Int((snapshot.activeEnergyKcal ?? 0).rounded())
+            todayStepCount = Int((snapshot.stepCount ?? 0).rounded())
+            todayDistanceKm = snapshot.distanceKm ?? 0
+            todayHRVms = Int((snapshot.hrvMs ?? 0).rounded())
+            todaySleepHours = snapshot.sleepHours ?? 0
+            todayAvgHeartRate = Int((snapshot.avgHeartRate ?? 0).rounded())
+            todayMinHeartRate = Int((snapshot.minHeartRate ?? 0).rounded())
+            todayMaxHeartRate = Int((snapshot.maxHeartRate ?? 0).rounded())
+        } else {
+            todayActiveEnergyKcal = 0
+            todayStepCount = 0
+            todayDistanceKm = 0
+            todayHRVms = 0
+            todaySleepHours = 0
+            todayAvgHeartRate = 0
+            todayMinHeartRate = 0
+            todayMaxHeartRate = 0
+        }
         lastHealthReadinessScore = result.readinessScore
         recomputeDashboardReadiness()
         await refreshCoachAdvice()
@@ -308,6 +346,7 @@ final class AppState: ObservableObject {
     }
 
     func addWorkout(input: WorkoutInput) {
+        rolloverDayIfNeeded()
         let estimatedCalories = Self.estimateWorkoutCalories(from: input)
         workoutLogs.insert(
             WorkoutLogItem(
@@ -447,6 +486,7 @@ final class AppState: ObservableObject {
     }
 
     func confirmScannedMeal(_ result: MealScanResult) {
+        rolloverDayIfNeeded(referenceDate: result.meal.loggedAt)
         meals.insert(result.meal, at: 0)
         dailyMealScanCount += 1
         lastMealDetectionSummary = "Meal scan confirmed and added."
@@ -457,6 +497,7 @@ final class AppState: ObservableObject {
     }
 
     func addManualMeal(name: String, calories: Int, protein: Int, carbs: Int, fat: Int, loggedAt: Date = Date()) {
+        rolloverDayIfNeeded(referenceDate: loggedAt)
         let meal = MealItem(
             id: UUID(),
             name: name,
@@ -479,6 +520,7 @@ final class AppState: ObservableObject {
     }
 
     func nutritionSummary(for range: NutritionTimeRange, referenceDate: Date = Date()) -> NutritionSummary {
+        rolloverDayIfNeeded(referenceDate: referenceDate)
         let calendar = Calendar.current
         let periodMeals = meals.filter { meal in
             switch range {
@@ -502,6 +544,7 @@ final class AppState: ObservableObject {
     }
 
     func meals(for range: NutritionTimeRange, referenceDate: Date = Date()) -> [MealItem] {
+        rolloverDayIfNeeded(referenceDate: referenceDate)
         let calendar = Calendar.current
         return meals
             .filter { meal in
@@ -966,6 +1009,33 @@ final class AppState: ObservableObject {
             carbs: today.carbs,
             fat: today.fat
         )
+    }
+
+    private func rolloverDayIfNeeded(referenceDate: Date = Date()) {
+        let day = Self.dayKey(for: referenceDate)
+        guard day != currentDayKey else { return }
+        currentDayKey = day
+        syncTodayNutritionFromMeals(referenceDate: referenceDate)
+        todayExerciseMinutes = 0
+        todayActiveEnergyKcal = 0
+        todayStepCount = 0
+        todayDistanceKm = 0
+        todayHRVms = 0
+        todaySleepHours = 0
+        todayAvgHeartRate = 0
+        todayMinHeartRate = 0
+        todayMaxHeartRate = 0
+    }
+
+    private func setupDayChangedObserver() {
+        dayChangedObserver = NotificationCenter.default.addObserver(
+            forName: .NSCalendarDayChanged,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.rolloverDayIfNeeded()
+            self?.persist()
+        }
     }
 
     static func nutritionTargets(for profile: UserProfile, isTrainingDay: Bool) -> (calorieGoal: Int, proteinGoal: Int, carbsGoal: Int, fatGoal: Int, recommendation: String) {

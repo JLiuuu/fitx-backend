@@ -10,6 +10,14 @@ final class HomeViewModel: ObservableObject {
     var latestHealthSummary: String { appState.latestHealthSummary }
     var healthInsights: [String] { appState.healthInsights }
     var healthStatus: HealthAuthorizationStatus { appState.healthStatus }
+    var todayActiveEnergyKcal: Int { appState.todayActiveEnergyKcal }
+    var todayStepCount: Int { appState.todayStepCount }
+    var todayDistanceKmText: String { String(format: "%.2f km", appState.todayDistanceKm) }
+    var todayHRVms: Int { appState.todayHRVms }
+    var todaySleepHoursText: String { String(format: "%.1f h", appState.todaySleepHours) }
+    var todayAvgHeartRate: Int { appState.todayAvgHeartRate }
+    var todayMinHeartRate: Int { appState.todayMinHeartRate }
+    var todayMaxHeartRate: Int { appState.todayMaxHeartRate }
     var showSignalExplanations: Bool { appState.showSignalExplanations }
     var trainingIntensityLevel: TrainingIntensityLevel {
         intensityEvaluation.level
@@ -157,9 +165,21 @@ final class WorkoutViewModel: ObservableObject {
     init(appState: AppState) { self.appState = appState }
 
     var workoutLogs: [WorkoutLogItem] { appState.workoutLogs }
+    var groupedWorkoutLogs: [(date: Date, logs: [WorkoutLogItem])] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: workoutLogs) { calendar.startOfDay(for: $0.loggedAt) }
+        return grouped
+            .map { (date: $0.key, logs: $0.value.sorted { $0.loggedAt > $1.loggedAt }) }
+            .sorted { $0.date > $1.date }
+    }
     /// Training target should always come from the user's Daily Workout Goal.
     var totalBurnedKcal: Int { max(80, appState.userProfile?.dailyWorkoutGoalKcal ?? 300) }
-    var trainingBurnKcal: Int { appState.workoutLogs.reduce(0) { $0 + $1.estimatedCalories } }
+    var trainingBurnKcal: Int {
+        if appState.healthStatus == .authorized, appState.todayActiveEnergyKcal > 0 {
+            return appState.todayActiveEnergyKcal
+        }
+        return appState.workoutLogs.reduce(0) { $0 + $1.estimatedCalories }
+    }
     /// Duration comes ONLY from Apple Watch / HealthKit (exercise minutes).
     /// If there is no data, the UI should show N/A.
     var trainingDurationMinutes: Int? {
@@ -476,6 +496,9 @@ final class NutritionViewModel: ObservableObject {
     var fatGoal: Int { appState.dashboard.fatGoal }
     var calorieGoal: Int { appState.dashboard.calorieGoal }
     var primaryGoal: PrimaryGoal { appState.userProfile?.primaryGoal ?? .muscleGain }
+    var bmrKcal: Int { Int((appState.userProfile?.bmr ?? 1650).rounded()) }
+    var activeBurnKcal: Int { max(0, appState.todayActiveEnergyKcal) }
+    var totalExpenditureKcal: Int { bmrKcal + activeBurnKcal }
 
     func requestMealScanPreview() async -> MealScanResult? {
         await appState.requestMealScanPreview()
